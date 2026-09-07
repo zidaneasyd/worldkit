@@ -1,0 +1,1887 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Worldbuilding</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("worldbuilding-theme-v1")==="dark"?"dark":"light"}catch{document.documentElement.dataset.theme="light"}</script>
+  <style>
+    :root{
+      --bg:#f6f6f6;
+      --surface:#fff;
+      --soft:#fafafa;
+      --text:#202020;
+      --muted:#777;
+      --muted2:#aaa;
+      --line:#e7e7e7;
+      --line2:#d7d7d7;
+      --danger:#b42318;
+      --ease:cubic-bezier(.2,.75,.25,1);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      overflow:hidden;
+      background:linear-gradient(180deg,#fafafa 0%,#f4f4f4 100%);
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    body.modal-open{overflow:hidden}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #aaa;outline-offset:2px}
+
+    .page{
+      width:min(980px,calc(100% - 32px));
+      height:100dvh;
+      margin:0 auto;
+      padding:26px 0 24px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    /* Input */
+    .composer{
+      flex:0 0 auto;
+      display:grid;
+      grid-template-columns:205px minmax(0,1fr) auto;
+      gap:10px;
+      align-items:end;
+      padding:12px;
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:17px;
+      box-shadow:0 12px 36px rgba(0,0,0,.06);
+    }
+    .field{min-width:0}
+    .field-label{
+      display:block;
+      margin:0 0 7px 3px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+    }
+    .text-input{
+      width:100%;
+      height:48px;
+      padding:0 14px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:var(--soft);
+      color:var(--text);
+      outline:0;
+      transition:.2s;
+    }
+    .text-input::placeholder{color:#aaa}
+    .text-input:focus{background:#fff;border-color:#bdbdbd;box-shadow:0 0 0 4px rgba(0,0,0,.035)}
+
+    /* Custom calendar */
+    .date-wrap{position:relative}
+    .date-display{
+      width:100%;
+      height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 13px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:var(--soft);
+      color:var(--text);
+      transition:.2s;
+    }
+    .date-display:hover,.date-display.active{background:#fff;border-color:#bdbdbd;box-shadow:0 0 0 4px rgba(0,0,0,.035)}
+    .date-main{display:flex;align-items:center;gap:9px;min-width:0;font-size:14px;font-weight:650}
+    .calendar-icon{width:18px;height:18px;color:#555;flex:0 0 18px}
+    .chevron{
+      width:7px;height:7px;flex:0 0 7px;
+      border-right:1.5px solid #777;border-bottom:1.5px solid #777;
+      transform:rotate(45deg) translateY(-2px);
+      transition:transform .18s ease;
+    }
+    .date-display.active .chevron{transform:rotate(225deg) translate(-1px,-1px)}
+    .date-native{position:absolute!important;width:1px;height:1px;opacity:0;pointer-events:none}
+    .calendar{
+      position:absolute;
+      z-index:80;
+      left:0;top:56px;
+      width:300px;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      box-shadow:0 18px 50px rgba(0,0,0,.13);
+      opacity:0;visibility:hidden;
+      transform:translateY(-6px) scale(.985);
+      transform-origin:top left;
+      transition:.2s;
+    }
+    .calendar.open{opacity:1;visibility:visible;transform:none}
+    .calendar-head{display:flex;align-items:center;justify-content:space-between}
+    .calendar-month{font-size:14px;font-weight:750}
+    .calendar-nav{display:flex;gap:4px}
+    .calendar-nav button{
+      width:29px;height:29px;border:0;border-radius:9px;background:#f2f2f2;color:#555;font-size:18px
+    }
+    .weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .weekdays{margin-top:7px}
+    .weekday{text-align:center;color:#aaa;font-size:10px;font-weight:750;padding:4px 0 6px}
+    .day{height:34px;border:0;border-radius:9px;background:transparent;color:#333;font-size:12px}
+    .day:hover{background:#f1f1f1}
+    .day.muted{color:#c7c7c7}
+    .day.today{box-shadow:inset 0 0 0 1px #d5d5d5}
+    .day.selected{background:#222;color:#fff}
+    .calendar-foot{display:flex;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:1px solid #f0f0f0}
+    .calendar-foot button{border:0;background:transparent;color:#777;font-size:11px;font-weight:650;padding:4px}
+
+    .add-btn{
+      height:48px;
+      padding:0 18px;
+      border:1px solid #222;
+      border-radius:13px;
+      background:#222;
+      color:#fff;
+      font-weight:720;
+      transition:transform .2s var(--ease),box-shadow .2s;
+    }
+    .add-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(0,0,0,.12)}
+
+    /* Toolbar */
+    .toolbar{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .summary{font-size:12px;color:var(--muted)}
+    .storage{margin-top:3px;color:var(--muted2);font-size:10px}
+    .sort{position:relative}
+    .sort-button{
+      min-width:135px;height:37px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:0 12px;
+      border:1px solid var(--line);border-radius:11px;background:#fff;
+      color:#4f4f4f;font-size:12px;font-weight:700;
+    }
+    .sort-menu{
+      position:absolute;right:0;top:44px;z-index:75;width:160px;
+      padding:5px;border:1px solid var(--line);border-radius:13px;background:#fff;
+      box-shadow:0 16px 35px rgba(0,0,0,.11);
+      opacity:0;visibility:hidden;transform:translateY(-5px);transition:.18s;
+    }
+    .sort-menu.open{opacity:1;visibility:visible;transform:none}
+    .sort-option{
+      width:100%;height:36px;border:0;border-radius:9px;background:transparent;
+      padding:0 10px;text-align:left;color:#666;font-size:12px;font-weight:650
+    }
+    .sort-option:hover,.sort-option.active{background:#f2f2f2;color:#222}
+
+    /* Main workspace: only these containers scroll */
+    .workspace{
+      position:relative;
+      flex:1 1 auto;
+      min-height:0;
+      display:flex;
+      gap:0;
+      overflow:hidden;
+    }
+
+    .timeline-panel{
+      flex:1 1 auto;
+      min-width:0;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:4px 4px 16px 0;
+      scrollbar-gutter:stable;
+    }
+    .timeline-panel::-webkit-scrollbar,.editor-panel::-webkit-scrollbar{width:8px}
+    .timeline-panel::-webkit-scrollbar-thumb,.editor-panel::-webkit-scrollbar-thumb{background:#d6d6d6;border-radius:999px}
+    .timeline-panel::-webkit-scrollbar-track,.editor-panel::-webkit-scrollbar-track{background:transparent}
+
+    .timeline-line-wrap{position:relative}
+    .timeline-line{
+      position:absolute;
+      left:112px;
+      top:5px;
+      bottom:12px;
+      width:1px;
+      background:linear-gradient(180deg,transparent 0,#ddd 7px,#ddd calc(100% - 14px),transparent);
+      pointer-events:none;
+    }
+    .timeline-item{
+      position:relative;
+      display:grid;
+      grid-template-columns:94px 36px minmax(0,1fr);
+      min-height:78px;
+      margin-bottom:10px;
+    }
+    .timeline-date{
+      padding:11px 14px 0 0;
+      color:#777;
+      font-size:11px;
+      line-height:1.4;
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+    .marker{position:relative}
+    .dot{
+      position:absolute;
+      left:18px;top:12px;
+      width:11px;height:11px;
+      border:3px solid #222;border-radius:50%;background:#fff;
+      transform:translateX(-50%);
+      z-index:2;
+    }
+    .card{
+      min-width:0;
+      padding:13px 12px 12px 14px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.035);
+      cursor:pointer;
+      transition:transform .22s var(--ease),box-shadow .22s,border-color .22s;
+    }
+    .card:hover{transform:translateY(-1px);border-color:#d4d4d4;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+    .card-content{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .card-copy{min-width:0;flex:1}
+    .card-title{font-weight:700;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+    .card-hint{margin-top:3px;color:#aaa;font-size:11px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+    .delete-btn{
+      width:30px;height:30px;flex:0 0 auto;margin-top:-2px;
+      display:grid;place-items:center;
+      border:0;border-radius:8px;background:transparent;color:#aaa;
+      opacity:.65;transition:.16s;
+    }
+    .card:hover .delete-btn{opacity:1}
+    .delete-btn:hover{background:#f4f4f4;color:var(--danger)}
+
+    .empty{
+      min-height:180px;
+      display:grid;place-items:center;
+      border:1px dashed var(--line2);
+      border-radius:16px;
+      background:rgba(255,255,255,.55);
+      text-align:center;
+    }
+    .empty-title{font-size:14px;font-weight:740}
+    .empty-text{margin-top:5px;color:var(--muted);font-size:11px}
+
+    /* Editor is alongside timeline; its own body scrolls */
+    .editor-panel{
+      position:relative;
+      width:0;
+      min-width:0;
+      flex:0 0 auto;
+      border-width:0;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 18px 45px rgba(0,0,0,.09);
+      overflow:hidden;
+      opacity:0;
+      visibility:hidden;
+      transform:translateX(28px);
+      pointer-events:none;
+      transition:opacity .3s ease,transform .46s var(--ease),visibility .3s,width .46s var(--ease),min-width .46s var(--ease);
+    }
+    .editor-panel:not(.open){border:0}
+    .workspace:has(.editor-panel.open){gap:22px}
+    .editor-panel.open{
+      width:46%;min-width:0;
+      opacity:1;visibility:visible;transform:none;pointer-events:auto;
+    }
+    .editor-head{
+      flex:0 0 auto;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:15px 17px;border-bottom:1px solid #ededed;
+    }
+    .editor-kicker{color:#999;font-size:10px;font-weight:760;letter-spacing:.09em;text-transform:uppercase}
+    .editor-head-title{
+      margin:3px 0 0;
+      font-size:17px;letter-spacing:-.025em;line-height:1.25;
+      max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+    }
+    .close{
+      width:35px;height:35px;display:grid;place-items:center;flex:0 0 auto;
+      border:1px solid #e4e4e4;border-radius:10px;background:#fff;color:#555;font-size:17px
+    }
+    .close:hover{background:#f4f4f4}
+    .editor-body{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      padding:20px 18px 24px;
+    }
+    .editor-date{
+      display:inline-flex;align-items:center;
+      padding:8px 10px;margin-bottom:18px;
+      border:1px solid #e9e9e9;border-radius:10px;background:#fafafa;
+      color:#666;font-size:11px;
+    }
+
+    /* Clean click-to-edit fields */
+    .clean-field{
+      width:100%;
+      margin:0;
+      padding:0;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--text);
+      cursor:text;
+      overflow-wrap:anywhere;
+    }
+    .clean-title{
+      font-size:22px;
+      line-height:1.3;
+      font-weight:740;
+      letter-spacing:-.025em;
+    }
+    .clean-description{
+      margin-top:18px;
+      color:#666;
+      font-size:13px;
+      line-height:1.72;
+      min-height:24px;
+      white-space:pre-wrap;
+    }
+    .clean-placeholder{color:#b1b1b1}
+    [contenteditable="plaintext-only"]{
+      cursor:text;
+      white-space:pre-wrap;
+    }
+    .clean-field:empty::before{content:attr(data-placeholder);color:#b1b1b1;pointer-events:none}
+    .clean-field:focus{outline:none;background:transparent;box-shadow:none}
+    .editor-section + .editor-section{margin-top:28px}
+    .editor-label{display:block;margin-bottom:10px;color:#999;font-size:10px;font-weight:700;letter-spacing:.09em}
+    .clean-description{margin-top:0;min-height:100px}
+    .editor-head{position:absolute;right:14px;top:14px;z-index:2;padding:0;border:0}
+    .editor-body{padding-top:22px}
+    .editor-section:first-child{padding-right:44px}
+    .clean-field,.clean-field:hover,.clean-field:focus,.clean-field:focus-visible{border:0;outline:0;box-shadow:none;background:transparent;border-radius:0;text-decoration:none}
+
+
+    .editor-footer{
+      flex:0 0 auto;
+      display:flex;align-items:center;gap:8px;
+      padding:13px 18px;border-top:1px solid #ededed;
+    }
+    .editor-help{color:#aaa;font-size:10px}
+    .save-btn{
+      margin-left:auto;
+      height:40px;padding:0 15px;
+      border:1px solid #222;border-radius:11px;background:#222;color:#fff;
+      font-size:12px;font-weight:720;
+      transition:transform .18s var(--ease),box-shadow .18s;
+    }
+    .save-btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
+
+    /* Confirm modal */
+    .modal-backdrop{
+      position:fixed;inset:0;z-index:200;
+      background:rgba(0,0,0,.24);
+      opacity:0;visibility:hidden;transition:.22s
+    }
+    .modal-backdrop.open{opacity:1;visibility:visible}
+    .confirm{
+      position:fixed;left:50%;top:50%;z-index:210;
+      width:min(380px,calc(100% - 28px));
+      padding:19px;
+      border:1px solid var(--line);border-radius:17px;background:#fff;
+      box-shadow:0 24px 70px rgba(0,0,0,.18);
+      opacity:0;visibility:hidden;
+      transform:translate(-50%,-47%) scale(.98);
+      transition:.25s var(--ease)
+    }
+    .confirm.open{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+    .confirm-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;background:#f4f4f4;color:#555;font-weight:800}
+    .confirm-title{margin:12px 0 5px;font-size:16px;letter-spacing:-.02em}
+    .confirm-text{margin:0;color:#777;font-size:12px;line-height:1.55}
+    .confirm-name{margin-top:11px;padding:10px 11px;border:1px solid #eee;border-radius:10px;background:#fafafa;color:#555;font-size:11px;line-height:1.4}
+    .confirm-actions{display:flex;gap:8px;margin-top:17px}
+    .confirm-actions button{flex:1;height:40px;border-radius:11px;font-size:12px;font-weight:720}
+    .cancel-delete{border:1px solid #e1e1e1;background:#fff;color:#666}
+    .do-delete{border:1px solid var(--danger);background:var(--danger);color:#fff}
+
+    .toast{
+      position:fixed;left:50%;bottom:19px;z-index:230;
+      width:min(360px,calc(100% - 24px));
+      padding:11px 13px;border:1px solid #ddd;border-radius:12px;
+      background:#fff;box-shadow:0 14px 40px rgba(0,0,0,.12);
+      color:#555;font-size:12px;text-align:center;
+      transform:translate(-50%,15px);opacity:0;visibility:hidden;transition:.25s
+    }
+    .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+
+    @media(max-width:780px){
+      .page{width:min(100% - 20px,650px);padding:16px 0}
+      .composer{grid-template-columns:1fr}
+      .add-btn{width:100%}
+      .toolbar{align-items:flex-start;flex-direction:column}
+      .sort,.sort-button{width:100%}.sort-menu{left:0;right:auto;width:100%}
+      .workspace{gap:0}
+      .timeline-panel{width:100%}
+      .workspace:has(.editor-panel.open){gap:10px}
+      .editor-panel.open{width:48%}
+      .editor-body{padding:16px 12px}
+      .editor-footer{padding:12px;flex-wrap:wrap}
+      .clean-title{font-size:18px}
+      .timeline-line{left:27px}
+      .timeline-item{grid-template-columns:55px 0 minmax(0,1fr)}
+      .timeline-date{padding-right:12px;font-size:10px}
+      .dot{left:0}
+    }
+
+    .page{width:calc(100% - 48px);padding:22px 0 20px;gap:18px}
+    .app-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;padding:0 2px}
+    .brand{display:flex;align-items:center;gap:10px;color:#252525;text-decoration:none;font-size:22px;font-weight:750;letter-spacing:-1px}
+    .brand-mark{display:grid;place-items:center;width:34px;height:34px;background:#242424;border-radius:11px;color:#fff;font-size:22px;letter-spacing:-2px;padding-right:2px}
+    .brand-dot{color:#a5a5a5}.header-caption{font-size:11px;color:#999;letter-spacing:.02em}
+    .toolbar{flex-direction:row;align-items:center}.sort,.sort-button{width:auto}
+    .composer{display:flex;align-items:center;align-self:center;gap:12px;width:min(700px,100%);padding:9px 10px 9px 20px;border:1px solid #e6e6e6;border-radius:26px;box-shadow:0 8px 30px #0000000c;flex:0 0 auto;background:#fff}
+    .composer .text-input{flex:1;min-width:0;height:40px;padding:0;border:0;background:transparent;box-shadow:none;outline:none;font-size:14px}
+    .composer .add-btn{width:40px;height:40px;flex:0 0 40px;border-radius:50%;padding:0;display:grid;place-items:center}
+    .editor-panel{transition:opacity .24s ease,transform .28s var(--ease),visibility .24s;box-shadow:0 8px 24px #00000006}
+    .editor-title-row{display:flex;align-items:flex-start;gap:18px}
+    .title-column{flex:1;min-width:0}.date-column{flex:0 0 auto}
+    .editor-section:first-child{padding-right:0;margin-top:2px}
+    .editor-body{padding:22px 20px 24px}
+    .editor-title-row .title-column{padding-top:0}
+    .editor-head{top:12px;right:12px}
+    .editor-section.editor-title-row{padding-top:0;padding-right:38px}
+    .editor-date-input{font:inherit;font-size:11px;color:#777;background:transparent;border:0;padding:3px 0;max-width:132px;cursor:pointer;color-scheme:light}
+    .editor-date-input:focus-visible{outline:1px solid #bbb;outline-offset:4px}
+    .toast{bottom:100px;background:#e8f2f0;border-color:#bdd6cf;color:#355d54;box-shadow:0 10px 30px #365f541a}
+    @media(max-width:780px){
+      .page{width:calc(100% - 20px);padding:14px 0 12px;gap:12px}
+      .brand{font-size:20px}.header-caption{font-size:10px}
+      .editor-body{padding:16px 12px}.editor-section.editor-title-row{flex-wrap:wrap;gap:16px;padding-top:0;padding-right:30px}
+      .title-column{flex-basis:100%}.date-column{max-width:100%}
+      .timeline-item{grid-template-columns:0 18px minmax(0,1fr);padding-top:22px}
+      .timeline-date{position:absolute;top:0;left:18px;padding:0;font-size:10px}
+      .timeline-line{left:4px}.dot{left:4px}
+      .composer{padding-left:16px;border-radius:24px}
+      .editor-footer{gap:10px}.editor-help{display:none}
+    }
+
+    /* Quiet slate accents: titles, dates, actions, and status have distinct roles. */
+    body{background:linear-gradient(180deg,#fdfdfd 0%,#fafafa 100%);color:#29343b}
+    .app-header{background:#edf0f1;border:1px solid #e7ebed;border-radius:15px;padding:13px 16px}
+    .brand{color:#283f49}.brand-mark{background:#355965}.brand-dot{color:#6c8e96}
+    .header-caption{color:#697d84}.summary{color:#526870}.storage{color:#87979b}
+    .card-title{color:#2f414b}.timeline-date{color:#66858b}.card-hint{color:#7a858b}
+    .editor-label{color:#6d8790}.clean-description{color:#586970}.clean-title{color:#2e424d}
+    .editor-panel{transition:width .36s var(--ease),opacity .24s ease,transform .36s var(--ease),visibility .36s}
+    .workspace{transition:gap .36s var(--ease)}
+    .card-hint,.clean-description{transition:opacity .054s ease}
+    .layout-moving .card-hint,.layout-moving .clean-description{opacity:0;transition:none}
+    .close{border:0;background:transparent;color:#7a8c93}.close:hover{background:#f0f4f4;color:#355965}
+    .composer{border-radius:15px;border:1px solid #dce5e7;border-left:3px solid #76949a;padding:10px 12px;gap:12px;background:#fff;box-shadow:0 6px 24px #28414b0a}
+    .composer-symbol{font-size:23px;color:#829a9f;line-height:1}.composer .text-input{color:#344e59}
+    .composer .add-btn{width:auto;flex:0 0 auto;padding:0 15px;gap:10px;display:flex;border-radius:9px;background:#3f626c;border-color:#3f626c;font-size:12px;font-weight:650}
+    .composer .add-btn span{opacity:.6;font-size:16px}.save-btn{background:#3f626c;border-color:#3f626c}
+    .date-chip{display:flex;align-items:center;gap:7px;background:#edf4f4;color:#456b74;border:1px solid #e0ebed;border-radius:8px;padding:7px 9px;font-size:11px;white-space:nowrap}
+    .date-chip:hover{background:#e5eff0}.date-chip[aria-expanded="true"]{border-color:#84a2aa}
+    .date-popover{position:fixed;inset:auto;margin:0;width:min(286px,calc(100vw - 20px));padding:16px;border:1px solid #dfe8eb;border-radius:16px;box-shadow:0 14px 48px #243d4926;background:#fff;color:#344e59;max-height:calc(100dvh - 20px);overflow:auto}
+    .picker-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:10px;font-weight:700;letter-spacing:.09em;color:#779098}
+    .picker-heading button{border:0;background:transparent;color:#789098;font-size:20px}
+    .picker-nav{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+    .picker-nav button{border:0;background:#eef4f5;color:#486d76;width:27px;height:29px;border-radius:7px;font-size:20px}
+    .picker-nav select,.picker-nav input{border:0;border-radius:5px;background:transparent;color:#36515e;font:inherit;font-size:12px;min-width:0;padding:4px}
+    .picker-nav select{flex:1}.picker-nav input{width:57px;appearance:textfield}.picker-nav input::-webkit-inner-spin-button{appearance:none}
+    .picker-weekdays,.picker-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+    .picker-weekdays{font-size:10px;color:#899da4;margin-bottom:6px}
+    .picker-days button{height:31px;border:0;border-radius:8px;background:transparent;color:#506771;font-size:12px}
+    .picker-days button:hover{background:#eaf2f3}.picker-days .today{box-shadow:inset 0 0 0 1px #a6c0c6}.picker-days .selected{background:#426975;color:#fff}
+    .picker-today{width:100%;margin-top:14px;padding:10px;border:0;border-top:1px solid #e9eff1;background:transparent;color:#537e88;font-size:11px;font-weight:650}
+    @media(max-width:780px){.app-header{padding:11px 12px}.composer{border-radius:14px}.header-caption{font-size:9px}.composer .add-btn{padding:0 12px}}
+
+    .character-row,.character-chips{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+    .character-chips:empty{display:none}
+    .character-chip{display:inline-flex;align-items:center;max-width:100%;border-radius:99px;background:#718d9f;color:white;padding:0 5px 0 11px;min-height:25px}
+    .character-name{border:0;background:transparent;color:inherit;font-size:11px;font-style:italic;padding:4px 0;overflow-wrap:anywhere;text-align:left;min-width:0}
+    .character-remove{border:0;background:transparent;color:#e3edf2;font-size:13px;padding:3px 5px;margin-left:3px;border-radius:50%}
+    .character-remove:hover{color:#fff;background:#ffffff26}
+    .character-add{border:0;border-radius:99px;min-width:42px;height:25px;background:#d9e2e8;color:#648399;font-size:15px;padding:0 12px}
+    .character-add:hover{background:#cbd9e2}
+    .character-input{border:0;outline:0;border-radius:99px;background:#edf2f5;color:#405c6f;padding:5px 11px;font-size:11px;min-width:110px;max-width:100%;width:140px;height:27px}
+    .character-input:focus-visible{outline:0;box-shadow:inset 0 0 0 1px #abc0cd}
+    .characters-section + .editor-section{margin-top:36px}
+
+    .character-chip{padding:0 11px;transition:background .15s ease}
+    .character-chip:hover{background:#607f93}
+    .character-name{font-style:normal;font-weight:400;text-decoration:none;padding:5px 0}
+    .character-chip:has(.character-input){padding:0;background:transparent}
+    .card-characters{display:inline-block;max-width:100%;margin-top:10px;padding:4px 10px;border:1px solid #9bb0bf;border-radius:99px;background:transparent;color:#698496;font-size:10px;line-height:1.5;font-style:normal;font-weight:400;text-decoration:none;overflow-wrap:anywhere}
+    .character-menu{position:fixed;inset:auto;margin:0;width:140px;padding:5px;border:1px solid #dce5e9;border-radius:11px;background:#fff;box-shadow:0 6px 20px #283e5014}
+    .character-menu button{display:block;width:100%;padding:9px 11px;text-align:left;border:0;border-radius:7px;background:transparent;color:#455e6b;font-size:12px}
+    .character-menu button:hover,.character-menu button:focus-visible{background:#edf3f5}
+    #characterMenuDelete{color:#a45450}
+    .header-actions{display:flex;align-items:center;gap:16px}
+    .hamburger{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:#526d78}
+    .hamburger:hover{background:#dfe7ea}
+    .main-menu{position:fixed;inset:0 0 0 auto;margin:0;width:30vw;min-width:240px;max-width:none;height:100dvh;max-height:100dvh;padding:28px 20px;border:0;border-left:1px solid #e1e7ea;background:#f8fafb;color:#354f5b;box-shadow:-6px 0 18px #3047570c;transform:translateX(100%);transition:transform .26s var(--ease);overflow-y:auto}
+    .main-menu.open{transform:translateX(0)}
+    .main-menu::backdrop{background:transparent}
+    .main-menu-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:35px}
+    .menu-kicker{color:#8b9ca4;font-size:9px;letter-spacing:.12em}
+    .main-menu h2{font-size:19px;font-weight:650;margin:5px 0 0;letter-spacing:-.4px}
+    .main-navigation{display:flex;flex-direction:column;gap:7px}
+    .main-navigation button{display:flex;align-items:center;gap:16px;width:100%;padding:14px 12px;text-align:left;border:0;border-radius:9px;background:transparent;color:#526b78;font-size:13px}
+    .main-navigation button span{font-size:10px;color:#99aab2;font-variant-numeric:tabular-nums}
+    .main-navigation button:hover,.main-navigation button[aria-current]{background:#e9eff2;color:#355565}
+    .main-menu-foot{display:block;margin-top:44px;padding:20px 12px 0;border-top:1px solid #e5ebee;font-size:10px;color:#94a4ac}
+    @media(max-width:600px){.main-menu{width:80vw;min-width:0;max-width:300px}.header-actions{gap:8px}}
+
+    :root{--rail-width:56px;--rail-top:98px}
+    .header-brand-group{display:flex;align-items:center;gap:12px}
+    .hamburger .toggle-close{display:none}.menu-expanded .toggle-bars{display:none}.menu-expanded .toggle-close{display:block}
+    .app-header{position:relative;z-index:181}
+    .page>.toolbar,.page>.workspace{margin-left:calc(var(--rail-width) + 8px)}
+    .editor-panel.open{width:36.8%}
+    .card-characters{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding:0;border:0;border-radius:0;background:transparent;font-size:9px}
+    .card-character{display:inline-block;max-width:100%;padding:3px 8px;border:1px solid #9bb0bf;border-radius:99px;color:#698496;font-size:9px;line-height:1.5;font-weight:400;overflow-wrap:anywhere}
+    .main-menu{inset:var(--rail-top) auto 20px 0;width:var(--rail-width);min-width:0;max-width:none;height:auto;max-height:none;margin:0;padding:12px 0;border:1px solid #e1e7ea;border-left:0;border-radius:0 14px 14px 0;background:#f8fafb;box-shadow:5px 0 16px #30475709;transform:none;transition:width .26s var(--ease);overflow-x:hidden;overflow-y:auto;z-index:180}
+    .main-menu.open{width:max(240px,25vw);transform:none}
+    .main-navigation{gap:7px;padding:0 6px}
+    .main-navigation button{width:100%;height:44px;min-height:44px;padding:0 11px;gap:16px;border-radius:9px;white-space:nowrap;overflow:hidden;flex-shrink:0}
+    .main-navigation .nav-icon{flex:0 0 20px;color:#6d8795}
+    .main-navigation button .nav-label{font-size:13px;color:inherit;opacity:0;transition:opacity .13s ease}
+    .main-menu.open .nav-label{opacity:1;transition-delay:.08s}
+    .main-menu-foot{white-space:nowrap;width:200px;opacity:0;pointer-events:none;transition:opacity .13s ease}
+    .main-menu.open .main-menu-foot{opacity:1}
+    .more-menu{width:174px}
+    .editor-title-row{flex-wrap:wrap}.title-column{flex:1 1 150px}
+    @media(max-width:780px){.editor-panel.open{width:38.4%}.main-menu.open{width:min(75vw,300px)}.page>.toolbar,.page>.workspace{margin-left:calc(var(--rail-width) + 2px)}.header-brand-group{gap:6px}.brand{gap:6px}.header-caption{display:none}}
+
+    [hidden]{display:none!important}
+    :root{--text:#151515;--muted:#505050}
+    body,.card-title,.clean-title,.clean-description,.brand{color:#151515}
+    .card-hint{color:#3e3e3e}.summary,.editor-help,.timeline-date,.editor-label{color:#505050}
+    .card-character,.date-chip,.main-navigation button{color:#333}
+    .brand-mark{letter-spacing:0;font-size:21px;padding:0;font-weight:750}
+    .main-menu.open{width:max(220px,20vw)}
+    .new-story,.story-toggle{display:flex;align-items:center;justify-content:center;gap:9px;border:0;background:transparent;color:#242424;font:inherit;font-size:12px;padding:8px 0}
+    .new-story{white-space:nowrap}.new-story:hover,.story-toggle:hover{color:#527380}
+    .story-toggle{max-width:300px;justify-content:flex-end}
+    #storyName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .story-menu{width:min(340px,calc(100vw - 20px));max-height:262px;padding:0;overflow-y:auto;overscroll-behavior:contain}
+    .story-menu button{height:52px;padding:8px 14px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;border-radius:0;color:#222}
+    .story-menu button span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .story-menu small{font-size:10px;color:#6c767b}
+    .description-heading{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+    .description-heading .editor-label{margin:0}
+    .reading-toggle{display:grid;place-items:center;border:0;background:transparent;padding:4px;color:#526a75;border-radius:5px}
+    .reading-toggle:hover{background:#edf1f3}
+    .editor-panel{transition:opacity .18s ease,transform .26s var(--ease),visibility .26s}
+    .workspace{transition:none}
+    .placeholder-view{flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;border:1px solid #e4e9ec;border-radius:18px;background:#fff}
+    .placeholder-kicker{font-size:10px;letter-spacing:.14em;color:#7d909b}
+    .placeholder-view h1{font-size:26px;color:#202020;margin:12px 0}
+    .placeholder-view p{font-size:13px;color:#595959}
+    .reading-dialog{width:50vw;max-width:none;height:calc(100dvh - 64px);max-height:calc(100dvh - 64px);margin:auto;padding:0;border:1px solid #e0e3e4;border-radius:16px;background:#fff;color:#161616;box-shadow:0 16px 60px #00000021;overflow:hidden}
+    .reading-dialog[open]{display:flex;flex-direction:column}
+    .reading-dialog::backdrop{background:#26343d26}
+    .reading-close{position:absolute;right:16px;top:14px;z-index:1;color:#222}
+    .reading-page{flex:1;min-height:0;overflow-y:auto;padding:48px 42px 20px;font-family:Arial,Helvetica,sans-serif}
+    .reading-page h1{margin:0 35px 18px 0;text-align:left;font-size:27px;line-height:1.3;overflow-wrap:anywhere}
+    .reading-characters{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;margin-bottom:26px}
+    .reading-characters .card-character{font-family:inherit;color:#333;font-size:11px;border-color:#b4bec4}
+    .reading-description{text-align:justify;overflow-wrap:anywhere;font-size:15px;line-height:1.85}
+    .reading-description p{margin:0 0 1em;white-space:pre-line}
+    .reading-footer{display:flex;justify-content:flex-end;padding:12px 20px;flex-shrink:0}
+    .reading-print{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:8px;background:#f0f3f4;color:#242424}
+    @media(max-width:780px){.main-menu.open{width:min(75vw,280px)}.brand{font-size:17px}.header-actions{gap:12px}.story-toggle{max-width:160px}.reading-dialog{width:calc(100vw - 28px)}.reading-page{padding:48px 24px 16px}}
+    @media(max-width:480px){.app-header{flex-wrap:wrap;gap:8px}.header-actions{width:100%;justify-content:space-between}.story-toggle{max-width:65%}}
+    @media print{
+      @page{size:A4;margin:20mm}
+      html,body{height:auto!important;overflow:visible!important;background:#fff!important;color:#161616!important}
+      body>*:not(#readingDialog){display:none!important}
+      #readingDialog{position:static!important;display:block!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+      #readingDialog::backdrop{display:none}
+      .reading-close,.reading-footer{display:none!important}
+      .reading-page{display:block!important;padding:0!important;overflow:visible!important;height:auto!important}
+      .reading-page h1{break-after:avoid}.reading-characters{break-inside:avoid}.reading-description p{orphans:3;widows:3}
+    }
+
+    .main-menu.open{width:max(190px,15vw)}
+    .card-characters .card-character{color:#788f9e}
+    .card-title,.card-hint,.clean-title,.clean-description{color:#151515}
+    .new-story{background:#527d91;border:1px solid #527d91;border-radius:9px;padding:9px 13px;color:#fff;font-weight:700;gap:8px}
+    .new-story:hover{background:#436d81;border-color:#436d81;color:#fff}
+    .editor-panel{opacity:1;transition:width .18s var(--ease),transform .18s var(--ease),visibility 0s .18s}
+    .editor-panel.open{opacity:1;transition-delay:0s}
+    .workspace{transition:gap .18s var(--ease)}
+    .card-hint,.clean-description{transition:opacity .054s ease}
+    .layout-moving .card-hint,.layout-moving .clean-description{opacity:0;transition:none}
+    .new-story-dialog{width:min(500px,calc(100vw - 32px));max-height:calc(100dvh - 40px);margin:auto;padding:24px;border:1px solid #dce5e9;border-radius:18px;background:#fff;color:#151515;box-shadow:0 18px 60px #263e4b26}
+    .new-story-dialog::backdrop{background:#26343d33}
+    .story-form-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .story-form-heading h2{font-size:20px;letter-spacing:-.4px;margin:0}
+    .story-input-row{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #dce5e7;border-left:3px solid #76949a;border-radius:12px;margin-bottom:20px}
+    .story-input-row input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#151515;font:inherit;font-size:14px}
+    .story-form-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .story-form-bottom select{flex:1;min-width:0;padding:10px 12px;border:1px solid #dce5e7;border-radius:9px;background:#f5f8f9;color:#222;font:inherit;font-size:13px}
+    .story-form-error{margin:14px 0 0;color:#a43e36;font-size:12px;line-height:1.5}
+    .story-empty{margin:0;padding:20px;color:#667c88;font-size:12px;line-height:1.6}
+    @media(max-width:780px){.main-menu.open{width:min(70vw,250px)}}
+
+    .card-hint,.clean-description{color:#718b9b;opacity:1;transition:none}
+    .story-toolbar{align-items:center;gap:24px;padding-left:130px;min-height:55px}
+    .story-heading{min-width:0;flex:1}
+    .story-heading h1{margin:4px 0 0;font-size:23px;font-weight:700;line-height:1.3;color:#171717;overflow-wrap:anywhere}
+    .story-genre{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#718692}
+    .timeline-status{flex:0 0 auto;text-align:right}
+    .story-menu button[aria-current]{background:#ecf2f5}
+    .composer:has(input:disabled){opacity:.65}.composer input:disabled{cursor:default}
+    .new-story-dialog{width:min(480px,calc(100vw - 32px));padding:28px;border:1px solid #e3e9ed;border-radius:20px;box-shadow:0 24px 80px #1d394028}
+    .story-form-heading{align-items:flex-start;margin-bottom:0}
+    .story-modal-kicker{display:block;font-size:9px;font-weight:700;letter-spacing:.16em;color:#8a9ca6;margin-bottom:10px}
+    .story-form-heading h2{font-size:23px;letter-spacing:-.5px;font-weight:650}
+    .story-modal-intro{margin:12px 0 26px;color:#75828a;font-size:12px;line-height:1.65}
+    .story-form .editor-label{font-size:9px;letter-spacing:.1em;color:#758a98;margin-bottom:9px}
+    .story-input-row{padding:15px 14px;border:1px solid #dce5eb;border-radius:10px;background:#f8fafb;margin-bottom:22px;transition:border-color .15s}
+    .story-input-row:focus-within{border-color:#7999ad;background:#fff}
+    .story-input-row .composer-symbol{display:none}
+    .story-form-bottom{gap:16px;align-items:stretch}
+    .story-form-bottom select{background:#f8fafb;border:1px solid #dce5eb;border-radius:10px;padding:12px}
+    .story-form-bottom .new-story{border-radius:10px;padding:12px 18px}
+    @media(max-width:780px){.story-toolbar{padding-left:18px;gap:12px}.story-heading h1{font-size:18px}.timeline-status .storage{max-width:110px}.story-form-bottom{flex-wrap:wrap}.new-story-dialog{padding:22px}}
+
+    .story-toolbar{display:grid;grid-template-columns:130px minmax(0,1fr) auto;padding-left:0;gap:0}
+    .timeline-status{text-align:left;min-width:0;padding-right:10px}
+    .timeline-status .storage{font-size:9px;line-height:1.45;max-width:116px}
+    .story-heading-line{display:flex;align-items:center;gap:9px;min-width:0}
+    .story-heading-line h1{min-width:0}.story-heading-line button{flex:0 0 auto}
+    .story-heading-line button:disabled{opacity:.35;cursor:default}
+    .story-selector{padding-left:20px;min-width:0}
+    .story-selector .story-toggle{font-size:12px;max-width:230px}
+    .header-actions{width:auto}
+    .card{background:#557d94;border-color:#557d94;box-shadow:0 4px 16px #31556f10}
+    .card:hover{background:#50778e;border-color:#7097ad}
+    .card .card-title,.card .card-hint,.card .card-character{color:#fff}
+    .card .card-character{border-color:#fff}
+    .card .delete-btn{color:#fff;opacity:.7}.card .delete-btn:hover{background:#ffffff20;color:#fff;opacity:1}
+    .settings-dialog{width:50vw;min-width:min(680px,calc(100vw - 32px));max-width:100%;height:calc(100dvh - 64px);max-height:calc(100dvh - 64px);margin:auto;padding:0;border:1px solid #dfe7eb;border-radius:17px;background:#fff;color:#171717;box-shadow:0 18px 65px #172e3926;overflow:hidden}
+    .settings-dialog[open]{display:flex;flex-direction:column}
+    .settings-dialog::backdrop{background:#26343d33}
+    .settings-header{display:flex;align-items:center;justify-content:space-between;padding:23px 25px 19px;border-bottom:1px solid #e7edf0}
+    .settings-header h2{font-size:22px;margin:0}.settings-header .story-modal-kicker{margin-bottom:6px}
+    .settings-layout{display:grid;grid-template-columns:30% minmax(0,70%);flex:1;min-height:0}
+    .settings-nav{padding:18px 10px;overflow-y:auto;border-right:1px solid #e7edf0;background:#f8fafb}
+    .settings-nav button{display:block;width:100%;border:0;border-radius:7px;background:transparent;color:#657e8d;text-align:left;font:inherit;font-size:12px;padding:11px 12px;margin-bottom:3px;line-height:1.5}
+    .settings-nav button:hover{text-decoration:underline;background:#edf3f6}.settings-nav button[aria-selected="true"]{background:#e7f0f5;color:#315e79;font-weight:650}
+    .settings-content{padding:27px;overflow-y:auto;min-width:0}
+    .settings-content h3{margin:0 0 12px;font-size:20px}.settings-content p{font-size:13px;line-height:1.7;color:#6b7f8b;margin:0 0 24px}
+    .setting-feature{padding:16px 0;border-bottom:1px solid #edf1f3;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:12px}.setting-feature small{font-size:10px;color:#8d9ca5}
+    .theme-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .theme-choice{padding:10px;border:1px solid #d9e3e8;border-radius:11px;background:transparent;color:inherit;text-align:left}
+    .theme-choice[aria-pressed="true"]{border-color:#5d91af;box-shadow:0 0 0 2px #5d91af22}
+    .theme-choice strong{display:block;font-size:12px;margin-top:9px}
+    .theme-swatch{display:block;height:85px;border-radius:6px;background:linear-gradient(90deg,#e7eef1 22%,transparent 22%),linear-gradient(#f1f5f7 20%,#fff 20%);border:1px solid #d5dfe5}
+    .theme-choice-dark .theme-swatch{background:linear-gradient(90deg,#27333d 22%,transparent 22%),linear-gradient(#27333d 20%,#151f28 20%);border-color:#405363}
+    :root[data-theme="dark"]{color-scheme:dark;--bg:#151c24;--surface:#202b36;--soft:#263441;--text:#edf1f5;--muted:#a1b1be;--line:#344453;--line2:#455868;--danger:#d9766e}
+    [data-theme="dark"] body{background:linear-gradient(180deg,#17202a,#111820);color:#edf1f5}
+    [data-theme="dark"] .app-header{background:#26323e;border-color:#354653}
+    [data-theme="dark"] .brand,[data-theme="dark"] .story-heading h1,[data-theme="dark"] .clean-title,[data-theme="dark"] .story-toggle,[data-theme="dark"] .summary{color:#f2f5f8}
+    [data-theme="dark"] .brand-mark{background:#49748e;color:#fff}
+    [data-theme="dark"] .story-genre,[data-theme="dark"] .storage,[data-theme="dark"] .editor-label,[data-theme="dark"] .timeline-date,[data-theme="dark"] .editor-help{color:#9cabb8}
+    [data-theme="dark"] .clean-description{color:#abc2d2}
+    [data-theme="dark"] .card{background:#34586f;border-color:#486e86}
+    [data-theme="dark"] .card:hover{background:#3a617a;border-color:#628aa4}
+    [data-theme="dark"] .timeline-line{background:linear-gradient(transparent,#526b7d 7px,#526b7d calc(100% - 14px),transparent)}
+    [data-theme="dark"] .dot{background:#17202a;border-color:#8bb4ce}
+    [data-theme="dark"] .editor-panel,[data-theme="dark"] .composer,[data-theme="dark"] .new-story-dialog,[data-theme="dark"] .reading-dialog,[data-theme="dark"] .settings-dialog,[data-theme="dark"] .confirm{background:#202b36;color:#edf1f5;border-color:#384a58}
+    [data-theme="dark"] .composer .text-input,[data-theme="dark"] .story-input-row input{color:#f2f5f8}
+    [data-theme="dark"] input::placeholder{color:#8b9caa}
+    [data-theme="dark"] .story-input-row,[data-theme="dark"] .story-form-bottom select{background:#18232e;color:#edf1f5;border-color:#415665}
+    [data-theme="dark"] .story-input-row:focus-within{background:#1b2935;border-color:#739ab2}
+    [data-theme="dark"] .story-modal-intro,[data-theme="dark"] .story-modal-kicker{color:#a1b1be}
+    [data-theme="dark"] .new-story,[data-theme="dark"] .save-btn,[data-theme="dark"] .composer .add-btn{background:#426f89;color:#fff;border-color:#648fa9}
+    [data-theme="dark"] .editor-footer,[data-theme="dark"] .settings-header{border-color:#364957}
+    [data-theme="dark"] .close,[data-theme="dark"] .reading-toggle{color:#b8cad7}
+    [data-theme="dark"] .close:hover,[data-theme="dark"] .reading-toggle:hover,[data-theme="dark"] .reading-print{background:#344553;color:#edf1f5}
+    [data-theme="dark"] .main-menu{background:#202c37;border-color:#354958}
+    [data-theme="dark"] .main-navigation button{color:#c2d0db}
+    [data-theme="dark"] .main-navigation button:hover,[data-theme="dark"] .main-navigation button[aria-current]{background:#314654;color:#f3f6f8}
+    [data-theme="dark"] .main-menu-foot{color:#8b9eac;border-color:#364b59}
+    [data-theme="dark"] .character-chip{background:#486a80;color:#fff}
+    [data-theme="dark"] .character-add,[data-theme="dark"] .character-input{background:#344a5c;color:#d4e3ee}
+    [data-theme="dark"] .character-menu,[data-theme="dark"] .date-popover{background:#25333f;color:#edf1f5;border-color:#415969}
+    [data-theme="dark"] .character-menu button,[data-theme="dark"] .picker-nav select,[data-theme="dark"] .picker-nav input,[data-theme="dark"] .picker-days button{color:#e6edf2}
+    [data-theme="dark"] .character-menu button:hover,[data-theme="dark"] .character-menu button:focus-visible,[data-theme="dark"] .story-menu button[aria-current],[data-theme="dark"] .picker-days button:hover{background:#384f61}
+    [data-theme="dark"] .story-menu small,[data-theme="dark"] .picker-weekdays,[data-theme="dark"] .story-empty{color:#a0b5c4}
+    [data-theme="dark"] .date-chip,[data-theme="dark"] .picker-nav button{background:#304757;color:#c8dce9;border-color:#476274}
+    [data-theme="dark"] .picker-days .selected{background:#527f99;color:#fff}
+    [data-theme="dark"] .picker-today{color:#b4ccdb;border-color:#3a5264}
+    [data-theme="dark"] .reading-page,[data-theme="dark"] .reading-characters .card-character{color:#edf1f5}
+    [data-theme="dark"] .settings-nav{background:#1b2630;border-color:#374956}
+    [data-theme="dark"] .settings-nav button{color:#acbfcd}
+    [data-theme="dark"] .settings-nav button:hover,[data-theme="dark"] .settings-nav button[aria-selected="true"]{background:#344c5e;color:#f1f5f8}
+    [data-theme="dark"] .settings-content p,[data-theme="dark"] .setting-feature small{color:#a2b5c3}
+    [data-theme="dark"] .setting-feature,[data-theme="dark"] .theme-choice{border-color:#405565}
+    [data-theme="dark"] .theme-choice[aria-pressed="true"]{border-color:#83b7d7}
+    [data-theme="dark"] .empty{background:#1d2934;border-color:#44596b;color:#edf1f5}
+    [data-theme="dark"] .empty-text,[data-theme="dark"] .confirm-text{color:#a4b7c6}
+    [data-theme="dark"] .confirm-name,[data-theme="dark"] .confirm-icon,[data-theme="dark"] .cancel-delete{background:#30424f;color:#e2eaf0;border-color:#486070}
+    [data-theme="dark"] .toast{background:#28473f;color:#d6eee5;border-color:#487363}
+    [data-theme="dark"] .story-form-error{color:#ffaaa4}
+    @media(max-width:780px){.story-toolbar{grid-template-columns:80px minmax(0,1fr);row-gap:8px;padding-left:0}.story-selector{grid-column:1 / -1;justify-self:end;padding-left:0}.timeline-status .storage{max-width:75px}.settings-dialog{width:calc(100vw - 24px);min-width:0}.settings-content{padding:18px}.settings-nav{padding:12px 5px}.settings-nav button{padding:10px 7px;font-size:11px}}
+    @media print{#readingDialog,#readingDialog *{color:#161616!important;background:#fff!important}#readingDialog .card-character{border-color:#aaa!important}}
+
+    :root{--motion-duration:320ms;--motion-ease:cubic-bezier(.2,.75,.25,1)}
+    body{position:relative;isolation:isolate;background:#f0f5f9}
+    body::before{content:"";position:fixed;inset:-80px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 430px 360px at 12% 22%,#80b4d14a,transparent 75%),radial-gradient(ellipse 420px 420px at 87% 27%,#5f9cbb30,transparent 73%),radial-gradient(ellipse 520px 310px at 56% 92%,#99cae84a,transparent 75%);filter:blur(48px)}
+    .app-header{background:#e5edf1cc;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .main-menu{background:#e5edf1e6;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:width var(--motion-duration) var(--motion-ease)}
+    .editor-panel{background:#ffffffe0;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:width var(--motion-duration) var(--motion-ease),transform var(--motion-duration) var(--motion-ease),visibility 0s var(--motion-duration)}
+    .editor-panel.open{transition-delay:0s}.workspace{transition:gap var(--motion-duration) var(--motion-ease)}
+    .main-navigation button .nav-label,.main-menu-foot{transition:opacity var(--motion-duration) ease}
+    .confirm{transition:opacity var(--motion-duration) ease,transform var(--motion-duration) var(--motion-ease),visibility var(--motion-duration)}
+    .card{background:#fffffff0;border-color:#dce5ec;box-shadow:0 5px 18px #3d627008}
+    .card:hover{background:#fff;border-color:#b8cedb}
+    .card .card-title{color:#171717}.card .card-hint{color:#718b9b}
+    .card .card-character{background:#718fa5;border-color:#718fa5;color:#fff}
+    .card .delete-btn{color:#718b9b}.card .delete-btn:hover{color:#a54e49;background:#edf3f6}
+    .settings-dialog{background:#ffffffd9;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+    .settings-dialog::backdrop{background:#26343d24;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+    .settings-nav{background:#edf3f6a8}.settings-nav button:hover{text-decoration:none}
+    .fictional-time-input{width:100%;min-width:100px;max-width:230px;padding:6px 0;border:0;outline:0;background:transparent;color:#526f82;font:inherit;font-size:12px}
+    .fictional-time-input:focus-visible{outline:none}
+    .new-story-actions{display:flex;justify-content:flex-end;margin-top:22px}
+    .time-mode-field{margin-top:20px}.time-mode-field select,.settings-input{width:100%;padding:12px;border:1px solid #dce5eb;border-radius:9px;background:#f7fafc;color:#243c4b;font:inherit;font-size:13px}
+    .story-settings-dialog{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 48px);margin:auto;padding:0;border:1px solid #dce5eb;border-radius:18px;background:#fff;color:#202020;box-shadow:0 20px 70px #213e5026;overflow:hidden}
+    .story-settings-dialog[open]{display:flex;flex-direction:column}
+    .story-settings-header{padding:24px 26px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #e9eef2}
+    .story-settings-header h2{margin:0;font-size:23px;letter-spacing:-.4px}
+    #storySettingsForm{display:flex;flex-direction:column;flex:1;min-height:0}
+    .story-settings-body{padding:24px 26px;overflow-y:auto;min-height:0}
+    .story-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+    .import-section{margin-top:26px;padding-top:22px;border-top:1px solid #e4ecf1}
+    .import-section p{font-size:12px;line-height:1.65;color:#718391;margin:8px 0}
+    .import-section code{display:block;white-space:normal;overflow-wrap:anywhere;font-size:11px;line-height:1.7;padding:10px 12px;margin:12px 0;background:#f1f6f9;color:#577286;border-radius:8px}
+    #storyImportFile{width:100%;font-size:12px;color:#698292}
+    #storyImportFile::file-selector-button{font:inherit;padding:9px 12px;border:1px solid #cadae4;border-radius:7px;background:#edf4f8;color:#496d84;cursor:pointer;margin-right:10px}
+    .story-settings-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 26px;border-top:1px solid #e4ecf1}
+    .delete-story-button{border:0;background:transparent;color:#aa5752;font:inherit;font-size:12px;padding:9px 0}
+    button:disabled{cursor:default;opacity:.5}
+    .story-settings-dialog::backdrop{background:#26343d33;backdrop-filter:blur(3px)}
+    .website-context-menu{width:200px}
+    [data-theme="dark"] body{background:#141d27}
+    [data-theme="dark"] body::before{background:radial-gradient(ellipse 440px 360px at 12% 22%,#3e83aa38,transparent 75%),radial-gradient(ellipse 420px 420px at 87% 27%,#36779c30,transparent 73%),radial-gradient(ellipse 520px 310px at 56% 92%,#295a822e,transparent 75%)}
+    [data-theme="dark"] .app-header,[data-theme="dark"] .main-menu{background:#263643d9}
+    [data-theme="dark"] .editor-panel{background:#202d38de}
+    [data-theme="dark"] .card{background:#263846ed;border-color:#425868;box-shadow:0 5px 20px #00000024}
+    [data-theme="dark"] .card:hover{background:#2c4050;border-color:#55768c}
+    [data-theme="dark"] .card .card-title{color:#edf3f7}
+    [data-theme="dark"] .card .card-hint{color:#a0bdcf}
+    [data-theme="dark"] .card .card-character{color:#eef5fa;background:#476c84;border-color:#476c84}
+    [data-theme="dark"] .card .delete-btn{color:#adc2d0}
+    [data-theme="dark"] .card .delete-btn:hover{background:#405666;color:#f3c0b9}
+    [data-theme="dark"] .settings-dialog{background:#202d38dc}
+    [data-theme="dark"] .settings-nav{background:#1b2834a3}
+    [data-theme="dark"] .settings-dialog::backdrop{background:#00000045}
+    [data-theme="dark"] .fictional-time-input{color:#b4cddd}
+    [data-theme="dark"] .story-settings-dialog{background:#202d38;color:#edf3f7;border-color:#405464}
+    [data-theme="dark"] .settings-input,[data-theme="dark"] .time-mode-field select{background:#182631;color:#dbe8f0;border-color:#3f5667}
+    [data-theme="dark"] .story-settings-header,[data-theme="dark"] .story-settings-footer,[data-theme="dark"] .import-section{border-color:#3c5263}
+    [data-theme="dark"] .import-section p,[data-theme="dark"] #storyImportFile{color:#a8bdcb}
+    [data-theme="dark"] .import-section code{background:#2b4050;color:#bfd5e3}
+    [data-theme="dark"] #storyImportFile::file-selector-button{background:#344e62;border-color:#56758b;color:#deedf6}
+    [data-theme="dark"] .delete-story-button{color:#e39a93}
+    [data-theme="dark"] dialog,[data-theme="dark"] .confirm,[data-theme="dark"] .character-menu,[data-theme="dark"] .date-popover{box-shadow:0 24px 80px #00000099}
+    @media(max-width:600px){.story-settings-grid{grid-template-columns:1fr}.story-settings-header,.story-settings-body{padding:20px}.story-settings-footer{padding:14px 20px;flex-wrap:wrap}}
+    @media print{body::before{display:none}#readingDialog{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}}
+
+
+    /* Unified glass modal system — same material intensity, modal-specific tint only */
+    :root{
+      --modal-glass-blur:24px;
+      --modal-glass-saturate:145%;
+      --modal-glass-opacity:.72;
+      --modal-glass-border-opacity:.46;
+      --modal-glass-shadow:0 28px 90px rgba(20,38,49,.22);
+      --modal-backdrop-color:rgba(23,38,48,.20);
+      --modal-backdrop-blur:8px;
+    }
+
+    #newStoryDialog{
+      --modal-glass-rgb:244 250 253;
+      --modal-border-rgb:184 210 224;
+    }
+    #storySettingsDialog{
+      --modal-glass-rgb:242 249 253;
+      --modal-border-rgb:178 207 224;
+    }
+    #settingsDialog{
+      --modal-glass-rgb:239 247 251;
+      --modal-border-rgb:174 202 218;
+    }
+    #readingDialog{
+      --modal-glass-rgb:250 251 250;
+      --modal-border-rgb:201 208 210;
+    }
+    #deleteStoryDialog{
+      --modal-glass-rgb:253 246 246;
+      --modal-border-rgb:224 191 188;
+    }
+    #confirm{
+      --modal-glass-rgb:250 248 247;
+      --modal-border-rgb:218 201 194;
+    }
+
+    :is(#newStoryDialog,#storySettingsDialog,#settingsDialog,#readingDialog,#deleteStoryDialog,#confirm){
+      background:rgb(var(--modal-glass-rgb) / var(--modal-glass-opacity));
+      border-color:rgb(var(--modal-border-rgb) / var(--modal-glass-border-opacity));
+      box-shadow:var(--modal-glass-shadow);
+      backdrop-filter:blur(var(--modal-glass-blur)) saturate(var(--modal-glass-saturate));
+      -webkit-backdrop-filter:blur(var(--modal-glass-blur)) saturate(var(--modal-glass-saturate));
+    }
+
+    :is(#newStoryDialog,#storySettingsDialog,#settingsDialog,#readingDialog,#deleteStoryDialog)::backdrop{
+      background:var(--modal-backdrop-color);
+      backdrop-filter:blur(var(--modal-backdrop-blur));
+      -webkit-backdrop-filter:blur(var(--modal-backdrop-blur));
+    }
+    .modal-backdrop{
+      background:var(--modal-backdrop-color);
+      backdrop-filter:blur(var(--modal-backdrop-blur));
+      -webkit-backdrop-filter:blur(var(--modal-backdrop-blur));
+    }
+
+    /* Keep internal surfaces translucent so the modal still reads as glass. */
+    #newStoryDialog .story-input-row,
+    #newStoryDialog .story-form-bottom select,
+    #newStoryDialog .time-mode-field select,
+    #storySettingsDialog .settings-input,
+    #storySettingsDialog .import-section code,
+    #storySettingsDialog #storyImportFile::file-selector-button,
+    #settingsDialog .settings-nav,
+    #readingDialog .reading-print,
+    #confirm .confirm-icon,
+    #confirm .confirm-name,
+    #confirm .cancel-delete,
+    #deleteStoryDialog .cancel-delete{
+      background-color:rgba(255,255,255,.42);
+      backdrop-filter:blur(10px) saturate(130%);
+      -webkit-backdrop-filter:blur(10px) saturate(130%);
+    }
+
+    [data-theme="dark"] #newStoryDialog{
+      --modal-glass-rgb:31 45 57;
+      --modal-border-rgb:79 108 126;
+    }
+    [data-theme="dark"] #storySettingsDialog{
+      --modal-glass-rgb:30 45 57;
+      --modal-border-rgb:77 107 127;
+    }
+    [data-theme="dark"] #settingsDialog{
+      --modal-glass-rgb:29 43 55;
+      --modal-border-rgb:75 103 122;
+    }
+    [data-theme="dark"] #readingDialog{
+      --modal-glass-rgb:31 42 52;
+      --modal-border-rgb:82 101 114;
+    }
+    [data-theme="dark"] #deleteStoryDialog{
+      --modal-glass-rgb:53 38 40;
+      --modal-border-rgb:130 82 82;
+    }
+    [data-theme="dark"] #confirm{
+      --modal-glass-rgb:48 39 40;
+      --modal-border-rgb:120 91 84;
+    }
+    [data-theme="dark"] :is(#newStoryDialog,#storySettingsDialog,#settingsDialog,#readingDialog,#deleteStoryDialog,#confirm){
+      --modal-glass-opacity:.76;
+      --modal-glass-border-opacity:.52;
+      --modal-glass-shadow:0 28px 90px rgba(0,0,0,.48);
+    }
+    [data-theme="dark"] :is(#newStoryDialog,#storySettingsDialog,#settingsDialog,#readingDialog,#deleteStoryDialog)::backdrop,
+    [data-theme="dark"] .modal-backdrop{
+      background:rgba(2,8,12,.34);
+    }
+    [data-theme="dark"] #newStoryDialog .story-input-row,
+    [data-theme="dark"] #newStoryDialog .story-form-bottom select,
+    [data-theme="dark"] #newStoryDialog .time-mode-field select,
+    [data-theme="dark"] #storySettingsDialog .settings-input,
+    [data-theme="dark"] #storySettingsDialog .import-section code,
+    [data-theme="dark"] #storySettingsDialog #storyImportFile::file-selector-button,
+    [data-theme="dark"] #settingsDialog .settings-nav,
+    [data-theme="dark"] #readingDialog .reading-print,
+    [data-theme="dark"] #confirm .confirm-icon,
+    [data-theme="dark"] #confirm .confirm-name,
+    [data-theme="dark"] #confirm .cancel-delete,
+    [data-theme="dark"] #deleteStoryDialog .cancel-delete{
+      background-color:rgba(18,29,38,.46);
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="app-header">
+      <a class="brand" href="#" aria-label="Worldbuilding"><span class="brand-mark" aria-hidden="true">W</span><span>Worldbuilding</span></a>
+      <div class="header-actions">
+        <button id="newStory" class="new-story" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8Z M14 3v5h5M8 13h8M8 17h6"/></svg>New story</button>
+
+      </div>
+    </header>
+
+    <div class="toolbar story-toolbar">
+      <div class="timeline-status"><div id="summary" class="summary">0 kejadian</div><div id="storage" class="storage">Tersimpan di perangkat</div></div>
+      <div class="story-heading"><span id="activeStoryGenre" class="story-genre"></span><div class="story-heading-line"><h1 id="activeStoryTitle">Belum ada story</h1><button id="editStory" class="reading-toggle" type="button" aria-label="Story setting" title="Story setting"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="var(--surface)"/><circle cx="16" cy="12" r="2" fill="var(--surface)"/><circle cx="10" cy="18" r="2" fill="var(--surface)"/></svg></button></div></div>
+      <div class="story-selector">        <button id="storyToggle" class="story-toggle" type="button" aria-label="Pilih story" aria-controls="storyMenu" aria-haspopup="menu" aria-expanded="false"><span id="storyName">Story</span><span class="chevron" aria-hidden="true"></span></button></div>
+    </div>
+
+    <section class="workspace">
+      <section id="timelinePanel" class="timeline-panel" aria-label="Daftar timeline"></section>
+
+      <aside id="editorPanel" class="editor-panel" aria-hidden="true">
+        <div class="editor-head">
+          <button id="editorClose" class="close" type="button" aria-label="Tutup">×</button>
+        </div>
+
+        <div id="editorBody" class="editor-body">
+          <section class="editor-section editor-title-row">
+            <div class="title-column">
+              <label id="titleLabel" class="editor-label">JUDUL</label>
+              <div id="editorTitle" class="clean-field clean-title" contenteditable="plaintext-only" role="textbox" aria-labelledby="titleLabel" data-placeholder="Judul" spellcheck="false" autocorrect="off" autocapitalize="off"></div>
+            </div>
+            <div class="date-column">
+              <label id="dateLabel" class="editor-label">TANGGAL</label>
+              <button id="dateButton" class="date-chip" type="button" aria-labelledby="dateLabel dateButtonText" aria-haspopup="dialog" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M8 3v4m8-4v4M4 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span id="dateButtonText"></span></button>
+              <input id="editorDateInput" type="date" hidden aria-label="Tanggal kejadian">
+              <input id="editorFictionalTime" class="fictional-time-input" type="text" placeholder="Contoh: Era Kabut, tahun ke-7" maxlength="180" aria-label="Keterangan waktu fiksi" hidden>
+            </div>
+          </section>
+          <section class="editor-section characters-section" aria-labelledby="charactersLabel">
+            <label id="charactersLabel" class="editor-label">TOKOH TERKAIT</label>
+            <div class="character-row">
+              <div id="characterChips" class="character-chips"></div>
+              <input id="characterInput" class="character-input" type="text" aria-label="Nama tokoh" placeholder="Nama; nama; …" maxlength="1000" autocomplete="off" spellcheck="false" hidden>
+              <button id="characterAdd" class="character-add" type="button" aria-label="Tambah tokoh">+</button>
+            </div>
+          </section>
+          <section class="editor-section">
+            <div class="description-heading"><label id="descriptionLabel" class="editor-label">DESKRIPSI</label><button id="openReading" class="reading-toggle" type="button" aria-label="Buka halaman teks"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></button></div>
+            <div id="editorDescription" class="clean-field clean-description" contenteditable="plaintext-only" role="textbox" aria-labelledby="descriptionLabel" aria-multiline="true" data-placeholder="Masukkan deskripsi" spellcheck="false" autocorrect="off" autocapitalize="off"></div>
+          </section>
+        </div>
+
+        <div class="editor-footer">
+          <span class="editor-help">Klik teks untuk mengedit · Enter selesai</span>
+          <button id="editorSave" class="save-btn" type="button">Simpan</button>
+        </div>
+      </aside>
+    </section>
+    <section class="composer" aria-label="Tambah kejadian">
+      <span class="composer-symbol" aria-hidden="true">＋</span>
+      <input id="titleInput" class="text-input" aria-label="Judul kejadian baru" type="text" maxlength="180" spellcheck="false" autocorrect="off" placeholder="Tulis kejadian baru…" autocomplete="off">
+      <button id="addBtn" class="add-btn" type="button">Catat <span aria-hidden="true">↵</span></button>
+    </section>
+  </main>
+
+  <aside id="mainMenu" class="main-menu" aria-label="Menu utama">
+    <nav class="main-navigation" aria-label="Menu utama">
+      <button type="button" data-section="Timeline" title="Timeline" aria-label="Timeline" aria-current="page"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v18M6 6h13M6 12h9M6 18h13"/></svg><span class="nav-label">Timeline</span></button>
+      <button type="button" data-section="Pengaturan" title="Pengaturan" aria-label="Pengaturan" ><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="var(--surface, #f8fafb)"/><circle cx="16" cy="12" r="2" fill="var(--surface, #f8fafb)"/><circle cx="10" cy="18" r="2" fill="var(--surface, #f8fafb)"/></svg><span class="nav-label">Pengaturan</span></button>
+    </nav>
+    <span class="main-menu-foot">Worldbuilding / ruang narasi</span>
+  </aside>
+  <div id="storyMenu" class="character-menu story-menu" popover="auto" role="menu" aria-label="Daftar story"></div>
+  <dialog id="newStoryDialog" class="new-story-dialog" aria-labelledby="newStoryHeading">
+    <div class="story-form-heading"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="newStoryHeading">Buat story baru</h2></div><button id="newStoryClose" class="close" type="button" aria-label="Tutup form story">×</button></div>
+    <form id="newStoryForm" class="story-form">
+      <p id="storyModalIntro" class="story-modal-intro">Mulai dengan judul. Setiap story memiliki timeline sendiri.</p><label class="editor-label" for="newStoryTitle">JUDUL CERITA</label>
+      <div class="story-input-row"><span class="composer-symbol" aria-hidden="true">＋</span><input id="newStoryTitle" type="text" maxlength="180" placeholder="Tulis judul cerita…" autocomplete="off" required aria-label="Judul cerita"></div>
+      <label class="editor-label" for="newStoryCategory">KATEGORI</label>
+      <div class="story-form-bottom"><select id="newStoryCategory" aria-label="Kategori story"><option>Fiksi</option><option>Non fiksi</option><option>Sejarah</option><option>Lainnya</option></select></div>
+      <div id="newStoryTimeOptions" class="time-mode-field" hidden><label class="editor-label" for="newStoryTimeMode">SISTEM WAKTU</label><select id="newStoryTimeMode"><option value="real">Tanggal nyata</option><option value="fictional">Waktu fiksi — teks bebas</option></select></div>
+      <p id="newStoryError" class="story-form-error" role="alert" hidden></p>
+      <div class="new-story-actions"><button id="storySubmit" class="new-story" type="submit">Tambah story</button></div>
+    </form>
+  </dialog>
+  <dialog id="storySettingsDialog" class="story-settings-dialog" aria-labelledby="storySettingsTitle">
+    <div class="story-settings-header"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="storySettingsTitle">Story setting</h2></div><button id="storySettingsClose" class="close" type="button" aria-label="Tutup story setting">×</button></div>
+    <form id="storySettingsForm">
+      <div class="story-settings-body">
+        <label class="editor-label" for="storySettingsName">JUDUL STORY</label><input id="storySettingsName" class="settings-input" type="text" maxlength="180" required autocomplete="off">
+        <div class="story-settings-grid"><div><label class="editor-label" for="storySettingsCategory">KATEGORI</label><select id="storySettingsCategory" class="settings-input"><option>Fiksi</option><option>Non fiksi</option><option>Sejarah</option><option>Lainnya</option></select></div><div id="storySettingsTimeOptions" hidden><label class="editor-label" for="storySettingsTimeMode">SISTEM WAKTU</label><select id="storySettingsTimeMode" class="settings-input"><option value="real">Tanggal nyata</option><option value="fictional">Waktu fiksi — teks bebas</option></select></div></div>
+        <section class="import-section"><label class="editor-label" for="storyImportFile">IMPOR TIMELINE · TXT</label><p>Satu baris untuk satu kejadian. Kejadian dari file akan ditambahkan saat perubahan disimpan.</p><code>Judul &gt; tanggal atau waktu &gt; Nama; Nama &gt; deskripsi</code><input id="storyImportFile" type="file" accept=".txt,text/plain"><p id="storyImportStatus" class="import-status" role="status">Belum ada file dipilih.</p></section>
+        <p id="storySettingsError" class="story-form-error" role="alert" hidden></p>
+      </div>
+      <div class="story-settings-footer"><button id="deleteStory" class="delete-story-button" type="button">Hapus story</button><button id="saveStorySettings" class="new-story" type="submit">Simpan perubahan</button></div>
+    </form>
+  </dialog>
+  <dialog id="deleteStoryDialog" class="new-story-dialog" aria-labelledby="deleteStoryTitle"><h2 id="deleteStoryTitle">Hapus story?</h2><p id="deleteStoryMessage" class="story-modal-intro"></p><div class="confirm-actions"><button id="cancelStoryDelete" class="cancel-delete" type="button">Batal</button><button id="confirmStoryDelete" class="do-delete" type="button">Hapus story</button></div></dialog>
+  <div id="websiteContextMenu" class="character-menu website-context-menu" popover="auto" role="menu" aria-label="Menu halaman">
+    <button type="button" role="menuitem">Tambah kejadian</button><button type="button" role="menuitem">Buat story baru</button><button type="button" role="menuitem">Cari dalam story</button><button type="button" role="menuitem">Tampilan halaman</button><button type="button" role="menuitem">Pengaturan</button>
+  </div>
+  <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
+    <div class="settings-header"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="settingsTitle">Pengaturan</h2></div><button id="settingsClose" class="close" type="button" aria-label="Tutup pengaturan">×</button></div>
+    <div class="settings-layout"><nav id="settingsNav" class="settings-nav" role="tablist" aria-label="Kategori pengaturan" aria-orientation="vertical"></nav><div id="settingsContent" class="settings-content"></div></div>
+  </dialog>
+  <dialog id="readingDialog" class="reading-dialog" aria-labelledby="readingTitle">
+    <button id="readingClose" class="close reading-close" type="button" aria-label="Tutup halaman teks">×</button>
+    <article id="readingPage" class="reading-page">
+      <h1 id="readingTitle"></h1>
+      <div id="readingCharacters" class="reading-characters" aria-label="Tokoh terkait"></div>
+      <div id="readingDescription" class="reading-description"></div>
+    </article>
+    <div class="reading-footer"><button id="readingPrint" class="reading-print" type="button" aria-label="Cetak halaman teks"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7Z M17 11h.01"/></svg></button></div>
+  </dialog>
+  <div id="characterMenu" class="character-menu" popover="auto" role="menu" aria-label="Pilihan tokoh">
+    <button id="characterMenuEdit" type="button" role="menuitem">Edit</button>
+    <button id="characterMenuDelete" type="button" role="menuitem">Hapus</button>
+  </div>
+
+  <div id="datePopover" class="date-popover" popover="auto" role="dialog" aria-label="Pilih tanggal kejadian">
+    <div class="picker-heading"><span>PILIH TANGGAL</span><button id="datePickerClose" type="button" aria-label="Tutup kalender">×</button></div>
+    <div class="picker-nav"><button id="datePrev" type="button" aria-label="Bulan sebelumnya">‹</button><select id="dateMonth" aria-label="Bulan"></select><input id="dateYear" type="number" min="1" max="9999" aria-label="Tahun"><button id="dateNext" type="button" aria-label="Bulan berikutnya">›</button></div>
+    <div class="picker-weekdays" aria-hidden="true"><span>Sn</span><span>Sl</span><span>Rb</span><span>Km</span><span>Jm</span><span>Sb</span><span>Mg</span></div>
+    <div id="dateDays" class="picker-days"></div>
+    <button id="dateToday" class="picker-today" type="button">Gunakan hari ini</button>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+  <div id="confirm" class="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-icon">?</div>
+    <h3 id="confirmTitle" class="confirm-title">Apakah Anda ingin menghapus?</h3>
+    <p id="confirmText" class="confirm-text">Kejadian ini akan dihapus dari timeline.</p>
+    <div id="confirmName" class="confirm-name"></div>
+    <div class="confirm-actions">
+      <button id="discardChanges" class="cancel-delete" type="button" hidden>Jangan simpan</button>
+      <button id="cancelDelete" class="cancel-delete" type="button">Tidak</button>
+      <button id="doDelete" class="do-delete" type="button">Hapus</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const DATA_KEY = "worldbuilding-data-v2";
+    const initialData=loadWorkspace();
+    const state = {
+      items: initialData.items,
+      activeStoryId:initialData.activeStoryId,
+      draftDate: todayISO(),
+      editingId: null,
+      editorOpen: false,
+      pendingDeleteId: null,
+      editingField: null,
+      draftTitle: "",
+      draftDescription: "",
+      draftCharacters: [],
+      toastTimer: null
+    };
+
+    const $ = id => document.getElementById(id);
+    const editorDateInput=$("editorDateInput");
+    const titleInput=$("titleInput"), addBtn=$("addBtn"), timelinePanel=$("timelinePanel"), summary=$("summary"), storage=$("storage");
+    const editorPanel=$("editorPanel"), editorTitle=$("editorTitle"), editorDescription=$("editorDescription"), editorBody=$("editorBody");
+    const modalBackdrop=$("modalBackdrop"), confirmBox=$("confirm"), confirmName=$("confirmName"), toast=$("toast");
+
+    function toISODate(d){
+      const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+      return x.toISOString().slice(0,10);
+    }
+    function todayISO(){return toISODate(new Date())}
+    function parseISO(v){return new Date(v+"T00:00:00")}
+    function formatDate(v){return new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"}).format(parseISO(v))}
+    function formatMonth(v){return new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric"}).format(v)}
+    function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+    function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
+    function loadWorkspace(){
+      try{
+        const raw=localStorage.getItem(DATA_KEY);
+        let source;
+        if(raw){
+          source=JSON.parse(raw);
+          if(!source||!Array.isArray(source.items)||!Array.isArray(source.stories))throw Error("Invalid workspace");
+        }else{
+          const oldItems=JSON.parse(localStorage.getItem("timeline-data-v1")||"[]");
+          const oldStories=JSON.parse(localStorage.getItem("worldbuilding-stories-v1")||"[]");
+          if(!Array.isArray(oldItems)||!Array.isArray(oldStories))throw Error("Invalid legacy data");
+          source={items:oldItems,stories:oldStories,activeStoryId:null};
+        }
+        const categories=["Fiksi","Non fiksi","Sejarah","Lainnya"];
+        const stories=source.stories.filter(x=>x&&typeof x.title==="string").map(x=>({
+          ...x,id:x.id||newId(),title:x.title.trim()||"Tanpa judul",genre:categories.includes(x.genre)?x.genre:"Lainnya",dateMode:x.genre==="Fiksi"&&x.dateMode==="fictional"?"fictional":"real"
+        }));
+        const items=source.items.filter(x=>x&&typeof x==="object").map(item=>({
+          ...item,id:item.id||newId(),storyId:item.storyId||null,
+          date:typeof item.date==="string"?item.date:todayISO(),title:item.title||item.description||"Tanpa judul",
+          description:typeof item.description==="string"?item.description:"",
+          characters:Array.isArray(item.characters)?item.characters.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.trim()):[],
+          createdAt:item.createdAt||Date.now()
+        }));
+        let recoveredId=null;
+        const unassigned=items.filter(item=>!stories.some(story=>story.id===item.storyId));
+        if(unassigned.length){
+          recoveredId=newId();stories.unshift({id:recoveredId,title:"Timeline awal",genre:"Lainnya"});
+          unassigned.forEach(item=>item.storyId=recoveredId);
+        }
+        const activeStoryId=stories.some(x=>x.id===source.activeStoryId)?source.activeStoryId:(recoveredId||stories[0]?.id||null);
+        return {stories,items,activeStoryId,migrated:!raw||!!recoveredId,loadError:false};
+      }catch{
+        // Never overwrite unreadable existing data with an empty workspace.
+        return {stories:[],items:[],activeStoryId:null,migrated:false,loadError:true};
+      }
+    }
+    function persistWorkspace(items=state.items,storyList=stories,activeStoryId=state.activeStoryId){
+      if(initialData.loadError){storage.textContent="Data tersimpan belum dapat dibaca";return false}
+      try{
+        localStorage.setItem(DATA_KEY,JSON.stringify({version:2,stories:storyList,items,activeStoryId}));
+        storage.textContent="Tersimpan di perangkat";return true;
+      }catch{storage.textContent="Gagal menyimpan data";return false}
+    }
+
+    function showToast(message){
+      clearTimeout(state.toastTimer);
+      toast.textContent=message;
+      toast.classList.add("show");
+      state.toastTimer=setTimeout(()=>toast.classList.remove("show"),2200);
+    }
+
+    // Timeline
+    function activeStory(){return stories.find(story=>story.id===state.activeStoryId)}
+    function usesFictionalTime(story=activeStory()){return story?.genre==="Fiksi"&&story.dateMode==="fictional"}
+    function itemTimeLabel(item){return usesFictionalTime()?item.date||"Waktu belum diisi":formatDate(item.date)}
+    function sortedItems(){
+      return state.items.filter(item=>item.storyId===state.activeStoryId)
+        .sort((a,b)=>usesFictionalTime()?(b.createdAt||0)-(a.createdAt||0):b.date.localeCompare(a.date)||(b.createdAt||0)-(a.createdAt||0));
+    }
+
+    function descriptionPreview(text){
+      const words=String(text).trim().split(/\s+/).filter(Boolean);
+      return words.length>50?words.slice(0,50).join(" ")+".......":text;
+    }
+
+    function renderTimeline(){
+      const items=sortedItems();
+      const active=stories.find(story=>story.id===state.activeStoryId);
+      summary.textContent=`${items.length} kejadian`;
+      $("activeStoryTitle").textContent=active?.title||"Belum ada story";
+      $("activeStoryGenre").textContent=active?.genre||"WORLDBUILDING";
+      $("storyName").textContent=active?.title||"Story";
+      titleInput.disabled=addBtn.disabled=!active;$("editStory").disabled=!active;
+      titleInput.placeholder=active?(usesFictionalTime(active)?"Judul kejadian baru…":"Judul kejadian, boleh diikuti dd/mm/yyyy…"):"Buat story melalui New story terlebih dahulu";
+
+      if(!items.length){
+        timelinePanel.innerHTML=`<div class="empty"><div><div class="empty-title">${active?"Belum ada kejadian":"Mulai cerita baru"}</div><div class="empty-text">${active?"Tambahkan kejadian pertama melalui kolom di bawah.":"Klik New story untuk membuat timeline pertamamu."}</div></div></div>`;
+        return;
+      }
+
+      timelinePanel.innerHTML=`
+        <div class="timeline-line-wrap">
+          <div class="timeline-line"></div>
+          ${items.map(item=>`
+            <article class="timeline-item">
+              <div class="timeline-date">${escapeHTML(itemTimeLabel(item))}</div>
+              <div class="marker"><div class="dot"></div></div>
+              <div class="card" data-edit="${item.id}" tabindex="0" role="button" aria-label="Buka ${escapeHTML(item.title)}">
+                <div class="card-content">
+                  <div class="card-copy">
+                    <div class="card-title">${escapeHTML(item.title)}</div>
+                    <div class="card-hint">${item.description ? escapeHTML(descriptionPreview(item.description)) : "(masukan deskripsi)"}</div>
+                    ${(item.characters||[]).length?`<div class="card-characters" aria-label="Tokoh terkait">${item.characters.map(name=>`<span class="card-character">${escapeHTML(name)}</span>`).join("")}</div>`:""}
+                  </div>
+                  <button class="delete-btn" type="button" data-delete="${item.id}" aria-label="Hapus">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M4.5 7h15M9 7V4.5h6V7m-8.5 0 .6 13h9.8l.6-13M10 10.5v6M14 10.5v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `).join("")}
+        </div>`;
+
+      timelinePanel.querySelectorAll(".card[data-edit]").forEach(card=>{
+        card.addEventListener("click",e=>{
+          // Critical: the delete button must never trigger the card editor.
+          if(e.target.closest("[data-delete]")) return;
+          if(state.editorOpen && state.editingId===card.dataset.edit){
+            closeEditor();
+          }else{
+            openEditor(card.dataset.edit);
+          }
+        });
+        card.addEventListener("keydown",e=>{
+          if(e.target.closest("[data-delete]")) return;
+          if(e.key==="Enter"||e.key===" "){
+            e.preventDefault();
+            if(state.editorOpen && state.editingId===card.dataset.edit) closeEditor();
+            else openEditor(card.dataset.edit);
+          }
+        });
+      });
+      timelinePanel.querySelectorAll("[data-delete]").forEach(btn=>{
+        btn.addEventListener("click",e=>{
+          // Stop both this button's event and the card's click/keyboard pathway.
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          openDeleteConfirm(btn.dataset.delete);
+        });
+      });
+    }
+
+    function realDateFromText(text){
+      const match=text.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if(!match)return null;
+      const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]),date=new Date(0);
+      date.setHours(0,0,0,0);date.setFullYear(year,month-1,day);
+      return year>=1&&date.getFullYear()===year&&date.getMonth()===month-1&&date.getDate()===day?`${match[3]}-${match[2]}-${match[1]}`:null;
+    }
+    function validISODate(value){return typeof value==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&realDateFromText(`${value.slice(8,10)}/${value.slice(5,7)}/${value.slice(0,4)}`)===value}
+    function parseTimelineTXT(text,fictional){
+      const records=[];let skipped=0;
+      for(const line of text.replace(/^\uFEFF/,"").split(/\r?\n/)){
+        if(!line.trim())continue;
+        const parts=line.split(">");
+        if(parts.length<4){skipped++;continue}
+        const title=parts.shift().trim(),time=parts.shift().trim(),names=parts.shift();
+        const date=fictional?time:realDateFromText(time);
+        if(!title||!date){skipped++;continue}
+        records.push({title,date,characters:names.split(";").map(x=>x.trim()).filter(Boolean),description:parts.join(">").trim()});
+      }
+      return {records,skipped};
+    }
+    function parseDatedTitle(value){
+      const text=value.trim(),match=text.match(/^(.*?)\s+(\d{2})\/(\d{2})\/(\d{4})$/);
+      if(!match)return {title:text,date:todayISO(),valid:true};
+      const day=Number(match[2]),month=Number(match[3]),year=Number(match[4]);
+      const date=new Date(0);date.setHours(0,0,0,0);date.setFullYear(year,month-1,day);
+      const valid=year>=1&&date.getFullYear()===year&&date.getMonth()===month-1&&date.getDate()===day&&!!match[1].trim();
+      return {title:match[1].trim(),date:`${match[4]}-${match[3]}-${match[2]}`,valid};
+    }
+    function addItem(){
+      const parsed=usesFictionalTime()?{title:titleInput.value.trim(),date:"",valid:true}:parseDatedTitle(titleInput.value),title=parsed.title;
+      if(!title){titleInput.focus();return}
+      if(!parsed.valid){showToast("Tanggal tidak valid. Gunakan dd/mm/yyyy, misalnya 18/04/1955.");titleInput.focus();return}
+      if(!stories.some(story=>story.id===state.activeStoryId))return;
+      const item={id:newId(),storyId:state.activeStoryId,date:parsed.date,title,description:"",characters:[],createdAt:state.items.filter(x=>x.storyId===state.activeStoryId).reduce((latest,x)=>Math.max(latest,(x.createdAt||0)+1),Date.now())};
+      const next=[...state.items,item];
+      if(!persistWorkspace(next)){showToast("Kejadian belum tersimpan. Coba lagi.");return}
+      state.items=next;renderTimeline();timelinePanel.scrollTop=0;
+      titleInput.value="";titleInput.focus();showToast("Kejadian berhasil ditambahkan.");
+    }
+    addBtn.addEventListener("click",addItem);
+    titleInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();addItem()}});
+
+    const datePopover=$("datePopover"),dateButton=$("dateButton");
+    let calendarCursor=new Date();
+    const monthNames=Array.from({length:12},(_,i)=>new Intl.DateTimeFormat("id-ID",{month:"long"}).format(new Date(2026,i,1)));
+    $("dateMonth").innerHTML=monthNames.map((name,i)=>`<option value="${i}">${name}</option>`).join("");
+    function updateDateButton(){$("dateButtonText").textContent=formatDate(editorDateInput.value)}
+    function closeDatePicker(){if(datePopover.matches(":popover-open"))datePopover.hidePopover()}
+    function selectDate(value){editorDateInput.value=value;updateDateButton();closeDatePicker();dateButton.focus()}
+    function renderDatePicker(){
+      const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth();
+      $("dateMonth").value=String(m);$("dateYear").value=y;
+      const start=new Date(calendarCursor);start.setDate(1);
+      const offset=(start.getDay()+6)%7;
+      const last=new Date(calendarCursor);last.setMonth(m+1,0);
+      let html='<span aria-hidden="true"></span>'.repeat(offset);
+      for(let day=1;day<=last.getDate();day++){
+        const d=new Date(start);d.setDate(day);const iso=toISODate(d);
+        html+=`<button type="button" data-day="${iso}" class="${iso===editorDateInput.value?'selected ':''}${iso===todayISO()?'today':''}" aria-label="${formatDate(iso)}" aria-pressed="${iso===editorDateInput.value}">${day}</button>`;
+      }
+      $("dateDays").innerHTML=html;
+    }
+    dateButton.addEventListener("click",()=>{
+      if(datePopover.matches(":popover-open")){closeDatePicker();return}
+      calendarCursor=parseISO(editorDateInput.value||todayISO());calendarCursor.setDate(1);renderDatePicker();
+      datePopover.showPopover();
+      const r=dateButton.getBoundingClientRect();
+      datePopover.style.left=Math.max(10,Math.min(r.right-286,innerWidth-296))+"px";
+      datePopover.style.top=Math.max(10,Math.min(r.bottom+9,innerHeight-datePopover.offsetHeight-10))+"px";
+      $("dateDays").querySelector(".selected")?.focus();
+    });
+    datePopover.addEventListener("toggle",()=>dateButton.setAttribute("aria-expanded",String(datePopover.matches(":popover-open"))));
+    $("dateDays").addEventListener("click",e=>{const b=e.target.closest("[data-day]");if(b)selectDate(b.dataset.day)});
+    $("datePrev").addEventListener("click",()=>{if(calendarCursor.getFullYear()===1&&calendarCursor.getMonth()===0)return;calendarCursor.setMonth(calendarCursor.getMonth()-1);renderDatePicker()});
+    $("dateNext").addEventListener("click",()=>{if(calendarCursor.getFullYear()===9999&&calendarCursor.getMonth()===11)return;calendarCursor.setMonth(calendarCursor.getMonth()+1);renderDatePicker()});
+    $("dateMonth").addEventListener("change",e=>{calendarCursor.setMonth(Number(e.target.value));renderDatePicker()});
+    $("dateYear").addEventListener("change",e=>{const y=Number(e.target.value);if(Number.isInteger(y)&&y>=1&&y<=9999)calendarCursor.setFullYear(y);renderDatePicker()});
+    $("dateToday").addEventListener("click",()=>selectDate(todayISO()));
+    $("datePickerClose").addEventListener("click",()=>{closeDatePicker();dateButton.focus()});
+    datePopover.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeDatePicker();dateButton.focus()}});
+    window.addEventListener("resize",closeDatePicker);
+
+    const characterInput=$("characterInput"),characterChips=$("characterChips"),characterMenu=$("characterMenu");
+    let characterEditIndex=null,characterMenuIndex=null;
+    characterChips.addEventListener("mousedown",e=>{if(!characterInput.hidden && e.target!==characterInput)e.preventDefault()});
+    function closeCharacterMenu(){
+      if(characterMenu.matches(":popover-open"))characterMenu.hidePopover();
+      characterMenuIndex=null;
+    }
+    function renderCharacters(){
+      // Return the shared input before replacing a chip that was being edited.
+      if(characterChips.contains(characterInput))$("characterAdd").before(characterInput);
+      characterChips.replaceChildren();
+      state.draftCharacters.forEach((name,index)=>{
+        const chip=document.createElement("span");chip.className="character-chip";chip.dataset.index=index;
+        const label=document.createElement("button");label.type="button";label.className="character-name";label.textContent=name;
+        label.setAttribute("aria-label",`Pilihan tokoh ${name}`);label.setAttribute("aria-haspopup","menu");
+        label.addEventListener("dblclick",e=>{e.preventDefault();beginCharacter(index)});
+        label.addEventListener("contextmenu",e=>{e.preventDefault();openCharacterMenu(index)});
+        chip.append(label);characterChips.append(chip);
+      });
+    }
+    function openCharacterMenu(index){
+      finishCharacter();closeCharacterMenu();
+      characterMenuIndex=index;
+      const anchor=characterChips.children[index];if(!anchor)return;
+      characterMenu.showPopover();
+      const r=anchor.getBoundingClientRect();
+      characterMenu.style.left=Math.max(8,Math.min(r.left,innerWidth-148))+"px";
+      characterMenu.style.top=Math.max(8,Math.min(r.bottom+6,innerHeight-characterMenu.offsetHeight-8))+"px";
+      $("characterMenuEdit").focus();
+    }
+    function beginCharacter(index=null){
+      finishCharacter();closeCharacterMenu();
+      characterEditIndex=index;
+      characterInput.value=index===null?"":state.draftCharacters[index];
+      if(index!==null){
+        const chip=characterChips.children[index];
+        const width=chip.getBoundingClientRect().width;
+        chip.replaceChildren(characterInput);
+        characterInput.style.width=Math.max(100,Math.min(width+30,240))+"px";
+      }else{
+        $("characterAdd").before(characterInput);characterInput.style.width="140px";
+      }
+      characterInput.hidden=false;characterInput.focus();
+      if(index!==null)characterInput.select();
+    }
+    function splitCharacterNames(value){return value.split(";").map(name=>name.trim()).filter(Boolean)}
+    function storeCharacterNames(names){
+      if(!names.length)return;
+      if(characterEditIndex===null)state.draftCharacters.push(...names);
+      else state.draftCharacters.splice(characterEditIndex,1,...names);
+    }
+    // A semicolon commits completed names while leaving the next name ready to type.
+    function consumeCharacterSeparators(){
+      if(!characterInput.value.includes(";"))return;
+      const pieces=characterInput.value.split(";");
+      const remainder=pieces.pop().trimStart();
+      const names=pieces.map(x=>x.trim()).filter(Boolean);
+      if(!names.length){characterInput.value=remainder;return}
+      characterInput.hidden=true;
+      storeCharacterNames(names);characterEditIndex=null;
+      characterInput.value=remainder;renderCharacters();
+      $("characterAdd").before(characterInput);
+      characterInput.style.width="140px";characterInput.hidden=false;characterInput.focus();
+      characterInput.setSelectionRange(remainder.length,remainder.length);
+    }
+    characterInput.addEventListener("input",e=>{if(!e.isComposing)consumeCharacterSeparators()});
+    characterInput.addEventListener("compositionend",consumeCharacterSeparators);
+    function finishCharacter(){
+      if(characterInput.hidden)return;
+      const names=splitCharacterNames(characterInput.value);
+      characterInput.hidden=true;
+      storeCharacterNames(names);
+      characterEditIndex=null;characterInput.value="";renderCharacters();
+    }
+    $("characterMenuEdit").addEventListener("click",()=>{const index=characterMenuIndex;if(index!==null)beginCharacter(index)});
+    $("characterMenuDelete").addEventListener("click",()=>{
+      const index=characterMenuIndex;closeCharacterMenu();
+      if(index!==null){state.draftCharacters.splice(index,1);renderCharacters();$("characterAdd").focus()}
+    });
+    characterMenu.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){e.preventDefault();e.stopPropagation();const index=characterMenuIndex;closeCharacterMenu();characterChips.children[index]?.querySelector("button")?.focus()}
+      else if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+        e.preventDefault();const buttons=[...characterMenu.querySelectorAll("button")];buttons[(buttons.indexOf(document.activeElement)+1)%buttons.length].focus();
+      }
+    });
+    editorBody.addEventListener("scroll",closeCharacterMenu);
+    window.addEventListener("resize",closeCharacterMenu);
+    $("characterAdd").addEventListener("click",()=>beginCharacter());
+    characterInput.addEventListener("blur",finishCharacter);
+    characterInput.addEventListener("keydown",e=>{
+      if(e.isComposing)return;
+      if(e.key==="Enter"){e.preventDefault();e.stopPropagation();finishCharacter();$("characterAdd").focus()}
+      else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();finishCharacter();closeEditor()}
+    });
+
+    const mainMenu=$("mainMenu"),moreMenu=$("storyMenu"),moreToggle=$("storyToggle");
+    function closeMoreMenu(){if(moreMenu.matches(":popover-open"))moreMenu.hidePopover()}
+    let menuHoverTimer,menuLeaveTimer;
+    function openMainMenu(){clearTimeout(menuHoverTimer);clearTimeout(menuLeaveTimer);if(!mainMenu.inert)mainMenu.classList.add("open")}
+    function closeMainMenu(){clearTimeout(menuHoverTimer);clearTimeout(menuLeaveTimer);mainMenu.classList.remove("open")}
+    mainMenu.addEventListener("pointerenter",()=>{clearTimeout(menuLeaveTimer);clearTimeout(menuHoverTimer);menuHoverTimer=setTimeout(openMainMenu,300)});
+    mainMenu.addEventListener("pointerleave",()=>{clearTimeout(menuHoverTimer);clearTimeout(menuLeaveTimer);menuLeaveTimer=setTimeout(closeMainMenu,300)});
+    mainMenu.addEventListener("focusin",openMainMenu);
+    mainMenu.addEventListener("focusout",e=>{if(!mainMenu.contains(e.relatedTarget))closeMainMenu()});
+    function activateSection(name){
+      if(name==="Pengaturan"){openSettings();return}
+      timelinePanel.hidden=false;
+      document.querySelector(".toolbar").hidden=false;
+      document.querySelector(".composer").hidden=false;
+    }
+    mainMenu.querySelectorAll("[data-section]").forEach(button=>button.addEventListener("click",()=>activateSection(button.dataset.section)));
+    function positionMainMenu(){
+      document.documentElement.style.setProperty("--rail-top",Math.round(document.querySelector(".app-header").getBoundingClientRect().bottom+12)+"px");
+    }
+    new ResizeObserver(positionMainMenu).observe(document.querySelector(".app-header"));
+    window.addEventListener("resize",positionMainMenu);positionMainMenu();
+    let stories=initialData.stories;
+    function switchStory(id){
+      closeMoreMenu();
+      if(!stories.some(story=>story.id===id))return;
+      if(id===state.activeStoryId){activateSection("Timeline");return}
+      const apply=()=>{
+        if(!persistWorkspace(state.items,stories,id)){showToast("Story belum dapat dibuka. Penyimpanan tidak tersedia.");return}
+        if(state.editorOpen)hideEditor();
+        state.activeStoryId=id;titleInput.value="";timelinePanel.scrollTop=0;
+        activateSection("Timeline");renderStories();renderTimeline();
+      };
+      if(state.editorOpen)requestEditorExit(apply);else apply();
+    }
+    function renderStories(){
+      moreMenu.replaceChildren();
+      if(!stories.length){const empty=document.createElement("p");empty.className="story-empty";empty.textContent="Belum ada story. Tambahkan lewat New story.";moreMenu.append(empty);return}
+      [...stories].sort((a,b)=>a.title.localeCompare(b.title,"id")).forEach(story=>{
+        const button=document.createElement("button");button.type="button";button.setAttribute("role","menuitem");
+        const title=document.createElement("span");title.textContent=story.title;
+        const genre=document.createElement("small");genre.textContent=story.genre;
+        button.append(title,genre);moreMenu.append(button);
+        if(story.id===state.activeStoryId)button.setAttribute("aria-current","true");
+        button.addEventListener("click",()=>switchStory(story.id));
+      });
+    }
+    renderStories();
+    const newStoryDialog=$("newStoryDialog"),storySettingsDialog=$("storySettingsDialog"),deleteStoryDialog=$("deleteStoryDialog");
+    let settingsStoryId=null,importText="",importReady=false,importBusy=false,importToken=0;
+    function updateTimeOptions(prefix){
+      $(prefix+"TimeOptions").hidden=$(prefix+"Category").value!=="Fiksi";
+    }
+    $("newStoryCategory").addEventListener("change",()=>updateTimeOptions("newStory"));
+    function openStoryForm(){
+      const open=()=>{
+        if(state.editorOpen)hideEditor();
+        closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
+        $("newStoryForm").reset();$("newStoryError").hidden=true;updateTimeOptions("newStory");
+        newStoryDialog.showModal();$("newStoryTitle").focus();
+      };
+      if(state.editorOpen)requestEditorExit(open);else open();
+    }
+    $("newStory").addEventListener("click",openStoryForm);
+    $("newStoryClose").addEventListener("click",()=>newStoryDialog.close());
+    newStoryDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();newStoryDialog.close()}});
+    newStoryDialog.addEventListener("close",()=>$("newStory").focus());
+    $("newStoryForm").addEventListener("submit",e=>{
+      e.preventDefault();const title=$("newStoryTitle").value.trim();if(!title)return;
+      const genre=$("newStoryCategory").value;
+      const story={id:newId(),title,genre,dateMode:genre==="Fiksi"?$("newStoryTimeMode").value:"real"};
+      const next=[...stories,story];
+      if(!persistWorkspace(state.items,next,story.id)){$("newStoryError").textContent="Story belum tersimpan. Penyimpanan perangkat tidak tersedia atau penuh.";$("newStoryError").hidden=false;return}
+      stories=next;state.activeStoryId=story.id;titleInput.value="";activateSection("Timeline");timelinePanel.scrollTop=0;
+      renderStories();renderTimeline();newStoryDialog.close();showToast("Story dibuat. Timeline baru siap diisi.");
+    });
+    function settingsUseFictionalTime(){return $("storySettingsCategory").value==="Fiksi"&&$("storySettingsTimeMode").value==="fictional"}
+    function showImportSummary(){
+      if(!importReady)return;
+      const parsed=parseTimelineTXT(importText,settingsUseFictionalTime());
+      $("storyImportStatus").textContent=`${parsed.records.length} kejadian siap ditambahkan${parsed.skipped?` · ${parsed.skipped} baris dilewati`:""}.`;
+    }
+    function openStorySettings(){
+      const open=()=>{
+        if(state.editorOpen)hideEditor();
+        const story=activeStory();if(!story)return;
+        closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
+        settingsStoryId=story.id;importToken++;importText="";importReady=false;importBusy=false;
+        $("storySettingsForm").reset();$("storySettingsName").value=story.title;$("storySettingsCategory").value=story.genre;$("storySettingsTimeMode").value=story.dateMode||"real";
+        $("storySettingsError").hidden=true;$("saveStorySettings").disabled=false;$("storyImportStatus").textContent="Belum ada file dipilih.";
+        updateTimeOptions("storySettings");storySettingsDialog.showModal();$("storySettingsName").focus();
+      };
+      if(state.editorOpen)requestEditorExit(open);else open();
+    }
+    $("editStory").addEventListener("click",openStorySettings);
+    $("storySettingsCategory").addEventListener("change",()=>{updateTimeOptions("storySettings");showImportSummary()});
+    $("storySettingsTimeMode").addEventListener("change",showImportSummary);
+    $("storySettingsClose").addEventListener("click",()=>storySettingsDialog.close());
+    storySettingsDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();storySettingsDialog.close()}});
+    storySettingsDialog.addEventListener("close",()=>{importToken++;importBusy=false;closeMainMenu();$("editStory").focus()});
+    $("storyImportFile").addEventListener("change",async e=>{
+      const file=e.target.files[0],token=++importToken;importText="";importReady=false;importBusy=false;$("saveStorySettings").disabled=false;
+      if(!file){$("storyImportStatus").textContent="Belum ada file dipilih.";return}
+      if(!/\.txt$/i.test(file.name)){$("storyImportStatus").textContent="Gunakan file berformat .txt.";return}
+      importBusy=true;$("saveStorySettings").disabled=true;$("storyImportStatus").textContent="Membaca file…";
+      try{const text=await file.text();if(token!==importToken)return;importText=text;importReady=true;showImportSummary()}
+      catch{if(token===importToken)$("storyImportStatus").textContent="File belum dapat dibaca."}
+      finally{if(token===importToken){importBusy=false;$("saveStorySettings").disabled=false}}
+    });
+    function prepareStoryItems(original,updated,items,records){
+      const converted=[];
+      for(const item of items){
+        if(item.storyId!==original.id){converted.push(item);continue}
+        let date=item.date;
+        if(usesFictionalTime(original)&&!usesFictionalTime(updated)){
+          date=validISODate(date)?date:realDateFromText(date);
+          if(!date)return null;
+        }else if(!usesFictionalTime(original)&&usesFictionalTime(updated)&&validISODate(date)){
+          date=`${date.slice(8,10)}/${date.slice(5,7)}/${date.slice(0,4)}`;
+        }
+        converted.push({...item,date});
+      }
+      const now=items.filter(x=>x.storyId===original.id).reduce((latest,x)=>Math.max(latest,(x.createdAt||0)+1),Date.now());
+      return [...converted,...records.map((record,index)=>({...record,id:newId(),storyId:original.id,createdAt:now+index}))];
+    }
+    $("storySettingsForm").addEventListener("submit",e=>{
+      e.preventDefault();if(importBusy)return;
+      const original=stories.find(x=>x.id===settingsStoryId),title=$("storySettingsName").value.trim();if(!original||!title)return;
+      const genre=$("storySettingsCategory").value;
+      const updated={...original,title,genre,dateMode:genre==="Fiksi"?$("storySettingsTimeMode").value:"real"};
+      const parsed=importReady?parseTimelineTXT(importText,usesFictionalTime(updated)):{records:[],skipped:0};
+      const nextItems=prepareStoryItems(original,updated,state.items,parsed.records);
+      if(!nextItems){$("storySettingsError").textContent="Ada keterangan waktu fiksi yang belum berupa tanggal nyata. Ubah keterangan tersebut menjadi dd/mm/yyyy sebelum mengganti sistem waktu.";$("storySettingsError").hidden=false;return}
+      const nextStories=stories.map(x=>x.id===updated.id?updated:x);
+      if(!persistWorkspace(nextItems,nextStories)){$("storySettingsError").textContent="Perubahan belum tersimpan. Coba lagi.";$("storySettingsError").hidden=false;return}
+      stories=nextStories;state.items=nextItems;renderStories();renderTimeline();storySettingsDialog.close();
+      showToast(parsed.records.length?`Story disimpan · ${parsed.records.length} kejadian ditambahkan.`:"Story setting berhasil disimpan.");
+    });
+    $("deleteStory").addEventListener("click",()=>{
+      const story=stories.find(x=>x.id===settingsStoryId);if(!story)return;
+      const count=state.items.filter(x=>x.storyId===story.id).length;
+      $("deleteStoryMessage").textContent=`Hapus “${story.title}” beserta ${count} kejadian? Tindakan ini tidak dapat dibatalkan.`;
+      deleteStoryDialog.showModal();$("cancelStoryDelete").focus();
+    });
+    $("cancelStoryDelete").addEventListener("click",()=>deleteStoryDialog.close());
+    deleteStoryDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();deleteStoryDialog.close()}});
+    $("confirmStoryDelete").addEventListener("click",()=>{
+      if(!stories.some(x=>x.id===settingsStoryId))return;
+      const nextStories=stories.filter(x=>x.id!==settingsStoryId),nextItems=state.items.filter(x=>x.storyId!==settingsStoryId);
+      const nextActive=state.activeStoryId===settingsStoryId?(nextStories[0]?.id||null):state.activeStoryId;
+      if(!persistWorkspace(nextItems,nextStories,nextActive)){showToast("Story belum dihapus. Coba lagi.");return}
+      stories=nextStories;state.items=nextItems;state.activeStoryId=nextActive;titleInput.value="";
+      deleteStoryDialog.close();storySettingsDialog.close();renderStories();renderTimeline();showToast("Story beserta timelinenya dihapus.");
+    });
+    moreToggle.addEventListener("click",()=>{
+      if(moreMenu.matches(":popover-open")){closeMoreMenu();return}
+      closeCharacterMenu();closeDatePicker();moreMenu.showPopover();
+      const r=moreToggle.getBoundingClientRect();
+      moreMenu.style.left=Math.max(8,Math.min(r.right-moreMenu.offsetWidth,innerWidth-moreMenu.offsetWidth-8))+"px";
+      moreMenu.style.top=Math.max(8,Math.min(r.bottom+8,innerHeight-moreMenu.offsetHeight-8))+"px";
+      moreMenu.querySelector("button")?.focus();
+    });
+    moreMenu.addEventListener("toggle",()=>moreToggle.setAttribute("aria-expanded",String(moreMenu.matches(":popover-open"))));
+    moreMenu.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeMoreMenu();moreToggle.focus()}
+      else if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+        e.preventDefault();const buttons=[...moreMenu.querySelectorAll("button")],index=buttons.indexOf(document.activeElement);
+        if(buttons.length)buttons[(index+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length].focus();
+      }
+    });
+    window.addEventListener("resize",closeMoreMenu);
+    const settingsDialog=$("settingsDialog");
+    const settingsSections=[
+      {id:"general",title:"Umum",description:"Preferensi dasar ruang kerja dan cerita.",features:["Bahasa aplikasi","Story saat mulai","Format tanggal"]},
+      {id:"appearance",title:"Tema & tampilan",description:"Pilih warna ruang kerja yang nyaman untuk membaca dan menulis.",features:[]},
+      {id:"editor",title:"Editor",description:"Preferensi penulisan judul dan deskripsi kejadian.",features:["Ukuran teks editor","Jarak antarbaris","Penyimpanan otomatis"]},
+      {id:"timeline",title:"Timeline",description:"Atur cara kejadian ditampilkan dalam cerita.",features:["Kepadatan kartu","Panjang cuplikan deskripsi","Tampilan penanda waktu"]},
+      {id:"characters",title:"Nama tokoh",description:"Preferensi label dan penulisan nama tokoh.",features:["Saran nama tokoh","Warna label","Pendeteksian nama ganda"]},
+      {id:"storage",title:"Penyimpanan",description:"Data cerita saat ini tersimpan di browser pada perangkat ini.",features:["Ekspor data","Impor cadangan","Cadangan otomatis"]},
+      {id:"print",title:"Dokumen & cetak",description:"Preferensi tampilan dokumen cerita.",features:["Ukuran kertas","Margin halaman","Nomor halaman"]},
+      {id:"shortcuts",title:"Pintasan",description:"Pilihan pintasan untuk alur kerja penulisan.",features:["Daftar pintasan","Ubah tombol pintasan"]},
+      {id:"about",title:"Tentang",description:"Worldbuilding — ruang untuk menyusun cerita, waktu, dan tokoh.",features:["Panduan penggunaan","Catatan versi"]}
+    ];
+    settingsSections.forEach(section=>{
+      const tab=document.createElement("button");tab.type="button";tab.id=`settings-tab-${section.id}`;tab.textContent=section.title;
+      tab.setAttribute("role","tab");tab.setAttribute("aria-controls",`settings-panel-${section.id}`);
+      tab.addEventListener("click",()=>selectSettings(section.id));$("settingsNav").append(tab);
+      const panel=document.createElement("section");panel.id=`settings-panel-${section.id}`;panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby",tab.id);panel.hidden=true;
+      const heading=document.createElement("h3");heading.textContent=section.title;
+      const description=document.createElement("p");description.textContent=section.description;panel.append(heading,description);
+      if(section.id==="appearance"){
+        const themes=document.createElement("div");themes.className="theme-options";
+        for(const [mode,label] of [["light","Terang"],["dark","Dark"]]){
+          const button=document.createElement("button");button.type="button";button.dataset.themeChoice=mode;button.className=`theme-choice theme-choice-${mode}`;
+          const swatch=document.createElement("span");swatch.className="theme-swatch";swatch.setAttribute("aria-hidden","true");
+          const name=document.createElement("strong");name.textContent=label;button.append(swatch,name);
+          button.addEventListener("click",()=>applyTheme(mode,true));themes.append(button);
+        }
+        panel.append(themes);
+      }else{
+        const list=document.createElement("div");list.className="setting-features";
+        section.features.forEach(feature=>{const row=document.createElement("div");row.className="setting-feature";const label=document.createElement("span");label.textContent=feature;const status=document.createElement("small");status.textContent="Belum tersedia";row.append(label,status);list.append(row)});panel.append(list);
+      }
+      $("settingsContent").append(panel);
+    });
+    function selectSettings(id){
+      settingsSections.forEach(section=>{
+        const active=section.id===id,tab=$(`settings-tab-${section.id}`);
+        tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;$(`settings-panel-${section.id}`).hidden=!active;
+      });
+      $("settingsContent").scrollTop=0;
+    }
+    $("settingsNav").addEventListener("keydown",e=>{
+      if(!["ArrowUp","ArrowDown","Home","End"].includes(e.key))return;
+      e.preventDefault();const tabs=[...$("settingsNav").querySelectorAll("button")];let index=tabs.indexOf(document.activeElement);
+      index=e.key==="Home"?0:e.key==="End"?tabs.length-1:(index+(e.key==="ArrowDown"?1:-1)+tabs.length)%tabs.length;
+      tabs[index].click();tabs[index].focus();
+    });
+    function applyTheme(mode,save=false){
+      if(!["light","dark"].includes(mode))return;
+      document.documentElement.dataset.theme=mode;
+      document.querySelectorAll("[data-theme-choice]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.themeChoice===mode)));
+      if(save){try{localStorage.setItem("worldbuilding-theme-v1",mode)}catch{showToast("Tema diterapkan, tetapi belum tersimpan di perangkat.")}}
+    }
+    applyTheme(document.documentElement.dataset.theme||"light");selectSettings("general");
+    function openSettings(){
+      closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
+      settingsDialog.showModal();$("settingsClose").focus();
+    }
+    $("settingsClose").addEventListener("click",()=>settingsDialog.close());
+    settingsDialog.addEventListener("close",()=>{closeMainMenu();document.querySelector(".brand").focus({preventScroll:true});requestAnimationFrame(closeMainMenu)});
+    settingsDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();settingsDialog.close()}});
+
+    const websiteContextMenu=$("websiteContextMenu");
+    function closeWebsiteContext(){if(websiteContextMenu.matches(":popover-open"))websiteContextMenu.hidePopover()}
+    document.addEventListener("contextmenu",e=>{
+      if(e.defaultPrevented||e.target.closest("input,textarea,[contenteditable],.character-name"))return;
+      e.preventDefault();closeWebsiteContext();websiteContextMenu.showPopover();
+      websiteContextMenu.style.left=Math.max(8,Math.min(e.clientX,innerWidth-websiteContextMenu.offsetWidth-8))+"px";
+      websiteContextMenu.style.top=Math.max(8,Math.min(e.clientY,innerHeight-websiteContextMenu.offsetHeight-8))+"px";
+      websiteContextMenu.querySelector("button").focus();
+    });
+    websiteContextMenu.querySelectorAll("button").forEach(button=>button.addEventListener("click",closeWebsiteContext));
+    websiteContextMenu.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeWebsiteContext()}
+      else if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+        e.preventDefault();const buttons=[...websiteContextMenu.querySelectorAll("button")],index=buttons.indexOf(document.activeElement);
+        buttons[(index+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length].focus();
+      }
+    });
+    window.addEventListener("resize",closeWebsiteContext);
+    const readingDialog=$("readingDialog");
+    $("openReading").addEventListener("click",()=>{
+      readDraft();
+      $("readingTitle").textContent=state.draftTitle;
+      $("readingCharacters").replaceChildren();
+      state.draftCharacters.forEach(name=>{const tag=document.createElement("span");tag.className="card-character";tag.textContent=name;$("readingCharacters").append(tag)});
+      $("readingCharacters").hidden=!state.draftCharacters.length;
+      $("readingDescription").replaceChildren();
+      state.draftDescription.split(/\n\s*\n/).filter(p=>p.trim()).forEach(text=>{
+        const paragraph=document.createElement("p");paragraph.textContent=text;$("readingDescription").append(paragraph);
+      });
+      closeCharacterMenu();closeDatePicker();closeMoreMenu();
+      readingDialog.showModal();$("readingPage").scrollTop=0;$("readingClose").focus();
+    });
+    $("readingClose").addEventListener("click",()=>{readingDialog.close();$("openReading").focus()});
+    readingDialog.addEventListener("cancel",e=>e.preventDefault());
+    readingDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation()}});
+    $("readingPrint").addEventListener("click",()=>window.print());
+
+    // Fields contain only user text; placeholder is rendered by CSS.
+    let pendingAction=null;
+    let modalMode=null;
+    let previousFocus=null;
+    function readDraft(){
+      finishCharacter();
+      state.draftTitle=editorTitle.innerText.replace(/\n/g," ").trim()||"Tanpa judul";
+      state.draftDescription=editorDescription.innerText.trim();
+      state.draftDate=usesFictionalTime()?$("editorFictionalTime").value.trim():editorDateInput.value;
+    }
+    function hasChanges(){
+      readDraft();
+      const item=state.items.find(x=>x.id===state.editingId&&x.storyId===state.activeStoryId);
+      return item && (item.title!==state.draftTitle || (item.description||"")!==state.draftDescription || item.date!==state.draftDate || JSON.stringify(item.characters||[])!==JSON.stringify(state.draftCharacters));
+    }
+    function openEditor(id){
+      if(state.editorOpen){
+        requestEditorExit(()=>showEditor(id));
+      }else showEditor(id);
+    }
+    function animateLayout(change){change()}
+
+    function showEditor(id){
+      closeCharacterMenu();
+      const item=state.items.find(x=>x.id===id&&x.storyId===state.activeStoryId);
+      if(!item)return;
+      state.editingId=id;
+      state.editorOpen=true;
+      characterInput.hidden=true;characterInput.value="";characterEditIndex=null;
+      state.draftCharacters=[...(item.characters||[])];renderCharacters();
+      const fictional=usesFictionalTime(),isFiction=activeStory()?.genre==="Fiksi";
+      $("dateLabel").textContent=isFiction?"KETERANGAN WAKTU":"TANGGAL";
+      $("charactersLabel").textContent=isFiction?"KARAKTER":"TOKOH TERKAIT";
+      dateButton.hidden=fictional;$("editorFictionalTime").hidden=!fictional;
+      if(fictional){$("editorFictionalTime").value=item.date||""}else{editorDateInput.value=item.date;updateDateButton()}
+      editorTitle.textContent=item.title;
+      editorDescription.textContent=item.description||"";
+      readDraft();
+      animateLayout(()=>editorPanel.classList.add("open"));
+      editorPanel.setAttribute("aria-hidden","false");
+      editorPanel.inert=false;
+      editorBody.scrollTop=0;
+    }
+    function hideEditor(){
+      closeCharacterMenu();
+      closeDatePicker();
+      animateLayout(()=>editorPanel.classList.remove("open"));
+      editorPanel.setAttribute("aria-hidden","true");
+      editorPanel.inert=true;
+      state.editorOpen=false;
+      state.editingId=null;
+    }
+    function closeEditor(){requestEditorExit(hideEditor)}
+    function requestEditorExit(action){
+      if(state.editorOpen && hasChanges()){
+        pendingAction=action;
+        openModal("save");
+      }else action();
+    }
+    function commitDraftToState(){
+      readDraft();
+      const item=state.items.find(x=>x.id===state.editingId&&x.storyId===state.activeStoryId);
+      if(!item)return false;
+      if(!usesFictionalTime()&&(!state.draftDate || !editorDateInput.validity.valid)){showToast("Pilih tanggal yang valid.");editorDateInput.focus();return false}
+      const updated=state.items.map(x=>x===item?{...x,title:state.draftTitle,description:state.draftDescription,date:state.draftDate,characters:[...state.draftCharacters]}:x);
+      if(!persistWorkspace(updated)){showToast("Gagal menyimpan. Perubahan masih ada di editor.");return false}
+      state.items=updated;
+      storage.textContent="Tersimpan di perangkat";
+      renderTimeline();
+      return true;
+    }
+    function saveEditor(){
+      if(commitDraftToState())showToast("Perubahan berhasil disimpan.");
+    }
+    [editorTitle,editorDescription].forEach(el=>{
+      el.addEventListener("keydown",e=>{
+        if(e.isComposing)return;
+        if(e.key==="Enter" && !(el===editorDescription && e.shiftKey)){
+          e.preventDefault();e.stopPropagation();el.blur();
+        }else if(e.key==="Escape"){
+          e.preventDefault();e.stopPropagation();el.blur();closeEditor();
+        }
+      });
+      el.addEventListener("blur",()=>{
+        readDraft();
+        // Keep the editable DOM intact so native Ctrl+Z history survives blur.
+      });
+      el.addEventListener("paste",e=>{
+        e.preventDefault();
+        const text=e.clipboardData.getData("text/plain");
+        // Browser editing command preserves the native undo transaction.
+        document.execCommand("insertText",false,el===editorTitle?text.replace(/\n/g," "):text);
+      });
+    });
+    $("editorFictionalTime").addEventListener("keydown",e=>{
+      if(e.isComposing)return;
+      if(e.key==="Enter"){e.preventDefault();e.stopPropagation();e.target.blur()}
+      else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();e.target.blur();closeEditor()}
+    });
+    $("editorClose").addEventListener("click",closeEditor);
+    $("editorSave").addEventListener("click",saveEditor);
+    editorPanel.inert=true;
+
+    function openModal(mode){
+      closeMainMenu();closeMoreMenu();mainMenu.inert=true;
+      closeCharacterMenu();
+      closeDatePicker();
+      modalMode=mode;
+      previousFocus=document.activeElement;
+      $("confirmTitle").textContent=mode==="save"?"Apakah ingin menyimpan?":"Apakah Anda ingin menghapus?";
+      $("confirmText").textContent=mode==="save"?"Ada perubahan yang belum disimpan.":"Kejadian ini akan dihapus dari timeline.";
+      $("doDelete").textContent=mode==="save"?"Simpan":"Hapus";
+      $("doDelete").style.background=mode==="save"?"#222":"";
+      $("doDelete").style.borderColor=mode==="save"?"#222":"";
+      $("cancelDelete").textContent="Batal";
+      $("discardChanges").hidden=mode!=="save";
+      confirmName.hidden=mode==="save";
+      modalBackdrop.classList.add("open");confirmBox.classList.add("open");
+      document.body.classList.add("modal-open");
+      document.querySelector("main").inert=true;
+      $("doDelete").focus();
+    }
+    function closeDeleteConfirm(){
+      modalBackdrop.classList.remove("open");confirmBox.classList.remove("open");
+      document.body.classList.remove("modal-open");
+      document.querySelector("main").inert=false;mainMenu.inert=false;
+      state.pendingDeleteId=null;modalMode=null;pendingAction=null;
+      if(previousFocus?.isConnected)previousFocus.focus();
+    }
+    function openDeleteConfirm(id){
+      const item=state.items.find(x=>x.id===id&&x.storyId===state.activeStoryId);
+      if(!item)return;
+      state.pendingDeleteId=id;
+      confirmName.textContent=`${itemTimeLabel(item)} — ${item.title}`;
+      openModal("delete");
+    }
+    function doDelete(){
+      if(modalMode==="save"){
+        if(!commitDraftToState())return;
+        const action=pendingAction;
+        closeDeleteConfirm();action?.();
+        return;
+      }
+      const id=state.pendingDeleteId;
+      if(!id)return;
+      const target=state.items.find(x=>x.id===id&&x.storyId===state.activeStoryId);
+      if(!target)return;
+      const next=state.items.filter(x=>x!==target);
+      if(!persistWorkspace(next)){showToast("Kejadian belum dihapus. Coba lagi.");return}
+      state.items=next;
+      if(state.editingId===id)hideEditor();
+      renderTimeline();closeDeleteConfirm();
+      showToast(`"${target?.title||"Kejadian"}" dihapus.`);
+    }
+    $("discardChanges").addEventListener("click",()=>{
+      const action=pendingAction;closeDeleteConfirm();action?.();
+    });
+    $("cancelDelete").addEventListener("click",closeDeleteConfirm);
+    $("doDelete").addEventListener("click",doDelete);
+    modalBackdrop.addEventListener("click",closeDeleteConfirm);
+    document.addEventListener("keydown",e=>{
+      if(!modalMode || e.isComposing)return;
+      if(e.key==="Enter"){
+        e.preventDefault();e.stopImmediatePropagation();
+        if(!e.repeat){
+          if(modalMode==="delete")doDelete();
+          else{
+            const button=document.activeElement.closest(".confirm-actions button");
+            if(button)button.click();else doDelete();
+          }
+        }
+      }else if(e.key==="Escape"){
+        e.preventDefault();e.stopImmediatePropagation();closeDeleteConfirm();
+      }else if(e.key==="Tab"){
+        const buttons=[...confirmBox.querySelectorAll("button")].filter(x=>!x.hidden);
+        const first=buttons[0],last=buttons.at(-1);
+        if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus()}
+        else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus()}
+      }
+    },true);
+
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){
+        if(confirmBox.classList.contains("open")) closeDeleteConfirm();
+        else if(editorOpen()) closeEditor();
+      }
+    });
+
+    function editorOpen(){return editorPanel.classList.contains("open")}
+
+    renderTimeline();
+    if(initialData.loadError)storage.textContent="Data tersimpan belum dapat dibaca";
+    else if(initialData.migrated)persistWorkspace();
+  </script>
+</body>
+</html>
