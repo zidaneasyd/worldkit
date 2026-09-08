@@ -1076,22 +1076,176 @@
     [data-theme="dark"] :is(#downloadConfirm,#deleteStoryDialog,#confirm[data-mode="delete"],#confirm[data-mode="duplicate"]) :is(.story-modal-intro,.confirm-text){color:#a4b7c6}
     [data-theme="dark"] :is(#downloadConfirm,#deleteStoryDialog,#confirm[data-mode="delete"],#confirm[data-mode="duplicate"]) .cancel-delete{background:#30424f;color:#e2eaf0;border-color:#486070}
     @media(max-width:780px){#downloadConfirm,#deleteStoryDialog,#confirm:is([data-mode="delete"],[data-mode="duplicate"]){padding:22px}}
+    #floatingNote{position:fixed;inset:auto;margin:0;width:390px;height:390px;min-width:min(280px,calc(100vw - 24px));min-height:220px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:0;border:1px solid #cddde6;border-radius:16px;background:#fcfefe;color:#243d4b;box-shadow:0 18px 60px #183b5138;resize:both;overflow:hidden;font-family:Arial,Helvetica,sans-serif;z-index:9999}
+    #floatingNote:popover-open{display:flex;flex-direction:column}
+    #floatingNote::backdrop{background:transparent;pointer-events:none}
+    .note-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;background:#edf4f7;border-bottom:1px solid #dce7ed;cursor:grab;touch-action:none;flex-shrink:0}
+    .note-head strong{font-size:14px}.note-head span{display:block;font-size:10px;color:#6e8797;margin-top:4px}
+    .note-actions,.note-format{display:flex;gap:4px}
+    #floatingNote button{display:grid;place-items:center;width:29px;height:28px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:16px;cursor:pointer}
+    #floatingNote button:hover{background:#dceaf2}#floatingNote button:focus-visible{outline:2px solid #719bb3;outline-offset:1px}
+    .note-format{padding:7px 12px;border-bottom:1px solid #e7eef2;flex-shrink:0}
+    #noteText{flex:1;min-height:0;overflow:auto;outline:none;padding:17px 20px;font-size:15px;line-height:1.8;overflow-wrap:anywhere;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:#adc0ca transparent;user-select:text;-webkit-user-select:text;cursor:text}
+    #noteText:empty::before{content:attr(data-placeholder);color:#92a6b2;pointer-events:none}
+    #noteText ul{margin:5px 0;padding-left:23px;list-style:disc}#noteText li{padding-left:3px}
+    #noteText p,#noteText div{margin:0}#noteText b{font-weight:700}#noteText i{font-style:italic}
+    .note-foot{padding:8px 15px 12px;font-size:10px;color:#8196a3;flex-shrink:0}
+    [data-theme="dark"] #floatingNote{background:#202f3b;color:#e0ecf3;border-color:#466273;box-shadow:0 18px 60px #0008}
+    [data-theme="dark"] .note-head{background:#2b4050;border-color:#3c5363}
+    [data-theme="dark"] .note-format{border-color:#3c5363}[data-theme="dark"] #floatingNote button:hover{background:#405d70}
+    [data-theme="dark"] .note-head span,[data-theme="dark"] .note-foot{color:#a4bccb}
+    @media print{#floatingNote{display:none!important}}
+    .workspace[hidden],.toolbar[hidden],.composer[hidden],.collection-page[hidden]{display:none!important}
+    .collection-page{flex:1;min-height:0;overflow:auto;margin-left:calc(var(--rail-width) + 8px);padding:12px 4px 24px;scrollbar-width:thin}
+    .collection-heading{display:flex;align-items:center;justify-content:space-between;margin:4px 0 24px}
+    .collection-heading h1{margin:8px 0;font-size:28px;color:var(--text)}.collection-heading p{margin:0;color:var(--muted);font-size:13px}
+    .collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:18px}
+    .story-card,.saved-note-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0;min-height:180px;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;font:inherit}
+    .story-card h2,.saved-note-card h2{font-size:20px;line-height:1.35;margin:14px 0 10px;overflow-wrap:anywhere}
+    .story-card p,.saved-note-card p{font-size:13px;line-height:1.7;color:var(--muted);margin:0;overflow-wrap:anywhere}
+    .saved-note-card p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+    .story-card:hover,.saved-note-card:hover{border-color:#779bb1}
+    .add-collection-card{justify-content:center;align-items:center;border-style:dashed;gap:12px;color:#62879e;background:transparent}
+    .add-collection-card>span{font-size:30px}.add-collection-card strong{font-size:14px}
+    #savedNoteDialog{width:min(850px,calc(100vw - 40px));height:calc(100dvh - 48px);max-height:none;max-width:none;padding:0;margin:auto;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);overflow:hidden;box-shadow:0 24px 80px #142b3b40}
+    #savedNoteDialog[open]{display:flex;flex-direction:column}#savedNoteDialog::backdrop{background:#192d3d33;backdrop-filter:blur(8px)}
+    .saved-note-body{display:flex;flex-direction:column;gap:18px;flex:1;min-height:0;padding:26px 32px}
+    .saved-note-title,.saved-note-description{width:100%;padding:0;border:0;outline:none;box-shadow:none;background:transparent;color:var(--text);font:inherit;resize:none;user-select:text}
+    .saved-note-title{font-size:24px;font-weight:650;line-height:1.4}.saved-note-description{flex:1;min-height:120px;font-size:16px;line-height:1.8;scrollbar-width:thin}
+    #noteText{width:100%;border:0;background:transparent;color:inherit;font-family:Arial,Helvetica,sans-serif;resize:none;box-shadow:none}
+    [data-theme="dark"] #savedNoteDialog{box-shadow:0 24px 80px #0009}
+    @media(max-width:600px){.collection-grid{gap:12px}.story-card,.saved-note-card{padding:18px;min-height:160px}.saved-note-body{padding:20px}.collection-heading h1{font-size:24px}}
+
+    /* Desktop navigation, collections and three modal sizes. */
+    #storyCards{grid-template-columns:repeat(6,minmax(0,1fr))}
+    .story-card{aspect-ratio:3/4;min-height:230px;padding:20px 16px;position:relative;justify-content:space-between;border-top:4px solid #7297ab}
+    .story-card h2{font-size:18px}.story-card.add-collection-card{justify-content:center;border-top-width:1px}
+    #savedNoteCards{grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr))}
+    .saved-note-card{min-height:175px;border-radius:5px 16px 16px 5px;border-left:4px solid #94aebc;background:#f7fafb}
+    .saved-note-card h2{margin-top:0}.saved-note-card.add-collection-card{background:transparent}
+    [data-theme="dark"] .saved-note-card{background:#243540;border-left-color:#708c9f}
+    :is(dialog,#confirm)[data-modal-size="small"]{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 48px)}
+    :is(dialog,#confirm)[data-modal-size="medium"]{width:min(640px,calc(100vw - 40px));max-height:calc(100dvh - 48px)}
+    :is(dialog,#confirm)[data-modal-size="large"]{width:min(1000px,calc(100vw - 48px));max-height:calc(100dvh - 48px);min-width:0}
+    #savedNoteDialog{height:min(650px,calc(100dvh - 48px))}
+    .mobile-only{display:none!important}
+    #mobileComposerDialog{padding:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text)}
+    .mobile-action-sheet{position:fixed;inset:auto 12px max(12px,env(safe-area-inset-bottom)) 12px;margin:0;width:auto;padding:10px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--text);box-shadow:0 18px 60px #0003}
+    .mobile-action-sheet button{display:block;width:100%;min-height:48px;padding:12px 16px;border:0;border-radius:10px;background:transparent;color:inherit;font:inherit;text-align:left}
+    .mobile-action-sheet button:hover{background:#7799aa22}
+    
+    
+    body.mobile .mobile-only{display:flex!important}
+    body.mobile #mainMenu{display:none}
+    body.mobile .page{width:100%;height:var(--usable-height,100dvh);padding:calc(10px + env(safe-area-inset-top)) 14px calc(78px + env(safe-area-inset-bottom));gap:14px;max-width:none}
+    body.mobile .page>.toolbar,body.mobile .page>.workspace,body.mobile .collection-page{margin-left:0}
+    body.mobile .collection-page{padding-top:2px}
+    body.mobile .app-header{padding:10px 12px;flex-wrap:nowrap;border-radius:14px;gap:8px}
+    body.mobile .brand{font-size:15px;min-width:0}body.mobile .brand-mark{width:30px;height:30px}
+    body.mobile .header-actions{width:auto;gap:5px}body.mobile .header-actions .new-story{font-size:12px;padding:10px}
+    body.mobile button{min-height:44px}body.mobile .close,body.mobile .reading-toggle{min-width:44px}
+    body.mobile #mobileNav{position:fixed;bottom:0;left:0;right:0;z-index:160;display:flex;justify-content:space-around;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+    body.mobile #mobileNav button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:80px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:20px}
+    body.mobile #mobileNav span{font-size:11px}body.mobile #mobileNav [aria-current="page"]{color:#557d94;background:#7799aa18}
+    body.mobile #storyCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}body.mobile .story-card{min-height:190px;padding:16px 12px}body.mobile .story-card h2{font-size:17px}
+    body.mobile #savedNoteCards{grid-template-columns:1fr}
+    body.mobile .story-toolbar{grid-template-columns:1fr auto;gap:8px}
+    body.mobile .timeline-status{grid-column:1/-1;display:flex;gap:10px;align-items:center}.mobile .timeline-status .storage{max-width:none}
+    body.mobile .story-selector{grid-column:auto}body.mobile .story-heading-line{flex-wrap:nowrap}
+    body.mobile #editStory,body.mobile #printStory,body.mobile #exportStoryMenuButton{display:none}
+    body.mobile .story-heading h1 .story-toggle{white-space:nowrap}.mobile #activeStoryTitle{max-width:55vw;white-space:nowrap}
+    body.mobile .workspace{overflow:hidden;min-height:0}body.mobile .timeline-panel{width:100%;flex-basis:100%;cursor:auto;padding-bottom:78px}
+    body.mobile .card{cursor:pointer;position:relative;padding:16px 46px 16px 14px}
+    body.mobile .card-title{font-size:17px}.mobile .card-hint{font-size:13px;line-height:1.65}
+    body.mobile .mobile-card-actions{position:absolute;right:4px;top:5px;align-items:center;justify-content:center;width:40px;border:0;border-radius:8px;background:transparent;color:var(--text);font-size:24px}
+    body.mobile .timeline-item{grid-template-columns:58px 18px minmax(0,1fr)}body.mobile .timeline-line{left:67px}
+    body.mobile .page>.composer{display:none!important}
+    body.mobile #mobileAddEvent{position:fixed;right:18px;bottom:calc(85px + env(safe-area-inset-bottom));z-index:150;border-radius:30px;padding:12px 20px;box-shadow:0 5px 18px #183b5130}
+    body.mobile:not([data-page="Timeline"]) #mobileAddEvent{display:none!important}
+    body.mobile .editor-panel,body.mobile .editor-panel.open{position:fixed;inset:0;width:100%;height:var(--usable-height,100dvh);z-index:190;flex:none;border-radius:0;max-height:none;padding-top:env(safe-area-inset-top);transform:translateX(100%)}
+    body.mobile .editor-panel.open{transform:none}
+    body.mobile .editor-head{justify-content:flex-start;padding:8px 14px;border-bottom:1px solid var(--line)}
+    body.mobile #editorMaximize{display:none}.mobile .editor-body{padding:20px;scroll-padding-block:20px}
+    body.mobile .editor-title-row{display:flex;flex-direction:column;gap:18px;padding-right:0}.mobile .title-column{width:100%}
+    body.mobile .clean-title{font-size:23px}.mobile .clean-description{font-size:16px;line-height:1.8}
+    body.mobile input,body.mobile textarea,body.mobile [contenteditable]{font-size:16px!important}
+    body.mobile .editor-footer{padding:10px 14px calc(10px + env(safe-area-inset-bottom));gap:8px;flex-wrap:wrap}
+    body.mobile .mobile-edit-tools{align-items:center;gap:4px;flex:1;flex-wrap:wrap}.mobile .mobile-edit-tools button{border:0;background:transparent;color:var(--text);padding:8px;font-size:15px}
+    body.mobile .editor-footer .editor-help{display:none}
+    body.mobile.mobile-editing #mobileNav,body.mobile.mobile-editing #mobileAddEvent,body.mobile.keyboard-open #mobileNav,body.mobile.keyboard-open #mobileAddEvent{display:none!important}
+    body.mobile #mobileComposerDialog{position:fixed;inset:auto 0 0;width:100%;margin:0;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom);max-height:var(--usable-height,100dvh)}
+    body.mobile #mobileComposerDialog .composer{display:flex!important;width:100%;border:0;box-shadow:none;border-radius:0;margin:0;padding:18px}
+    body.mobile #mobileComposerDialog .add-btn{width:auto;min-width:70px}
+    body.mobile :is(#readingDialog,#savedNoteDialog,#maxEditorDialog,#settingsDialog){width:100%;height:var(--usable-height,100dvh);max-width:none;max-height:none;min-width:0;margin:0;inset:0;border-radius:0;padding-top:env(safe-area-inset-top)}
+    body.mobile :is(#newStoryDialog,#storySettingsDialog){width:calc(100% - 20px);max-height:calc(var(--usable-height,100dvh) - 24px);margin:auto;padding-bottom:18px}
+    body.mobile :is(#confirm,#downloadConfirm,#deleteStoryDialog){width:calc(100% - 28px);max-height:calc(var(--usable-height,100dvh) - 24px);padding:22px}
+    body.mobile .reading-page{padding:28px 22px}.mobile .reading-description{font-size:16px;line-height:1.85;user-select:text;-webkit-user-select:text}
+    body.mobile .reading-description *{user-select:text;-webkit-user-select:text}
+    body.mobile .reading-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    body.mobile .settings-layout{display:block;overflow:auto;flex:1;min-height:0}
+    body.mobile #settingsNav{width:100%;border-right:0}.mobile #settingsNav button{width:100%;font-size:15px;padding:16px;text-align:left}
+    body.mobile #settingsContent{display:none}.mobile #mobileSettingsBack{display:none!important}
+    body.mobile #settingsDialog.settings-detail #settingsNav{display:none}.mobile #settingsDialog.settings-detail #settingsContent{display:block}
+    body.mobile #settingsDialog.settings-detail #mobileSettingsBack{display:flex!important}
+    body.mobile .settings-header{gap:6px;padding:12px 14px}.mobile .settings-header>div{flex:1}
+    body.mobile #floatingNote{left:10px!important;top:auto!important;bottom:max(10px,env(safe-area-inset-bottom));width:calc(100vw - 20px)!important;height:min(70dvh,600px)!important;max-height:calc(var(--usable-height,100dvh) - 20px);resize:none;min-height:160px}
+    body.mobile #noteResize{display:none}.mobile .note-head{cursor:default}.mobile .note-foot{font-size:0}.mobile .note-foot::after{content:"Tersimpan sementara sampai halaman dimuat ulang";font-size:10px}
+    body.mobile #characterMenu{width:calc(100vw - 24px)!important;left:12px!important;top:auto!important;bottom:12px;padding:10px}.mobile #characterMenu button{min-height:48px;font-size:16px}
+    body.mobile #storyMenu{max-width:calc(100vw - 24px);width:min(340px,calc(100vw - 24px))}.mobile #storyMenu button{min-height:52px}
+    body.mobile .select-options button{min-height:44px;font-size:16px}
+    body.mobile .saved-note-body{padding:22px}.mobile #savedNoteDialog .editor-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    @media(max-width:380px){body.mobile #storyCards{grid-template-columns:1fr}.mobile .story-card{aspect-ratio:auto;min-height:210px}}
+    @media print{body.mobile #mobileNav,body.mobile #mobileAddEvent{display:none!important}body.mobile #readingDialog{width:auto!important;height:auto!important}}
+    .mobile-plain-tools{gap:6px;padding:4px 14px}.mobile-plain-tools button{border:0;border-radius:8px;background:transparent;color:var(--text);min-width:44px;font-size:20px}
+    body.mobile #floatingNote .mobile-plain-tools button{height:44px}
     @media(prefers-reduced-motion:reduce){
       *,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important}
     }
-  </style>
+      /* Six story slots, including the create card, on desktop. */
+    #storyCards{grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+    .story-card{padding:0;min-height:210px;overflow:hidden}
+    .story-card-main{display:flex;flex:1;width:100%;min-width:0;flex-direction:column;align-items:flex-start;padding:22px 14px;border:0;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit}
+    .story-card-main .editor-label{padding-right:20px}.story-card-main h2{margin:12px 0;font-size:17px}.story-card-main p{margin-top:auto;padding-top:18px}
+    .story-card-settings{position:absolute;right:5px;top:7px;width:32px;height:32px;border:0;border-radius:8px;background:var(--surface);color:var(--muted);opacity:0;cursor:pointer;font-size:18px}
+    .story-card:hover .story-card-settings,.story-card:focus-within .story-card-settings{opacity:1}.story-card.session-active{box-shadow:inset 0 0 0 2px #779eb4}
+    #activeStoryNotice{padding:12px 16px;margin:0 0 18px;border-radius:10px;background:#719cb31c;color:var(--text);font-size:13px}
+    #savedNoteCards{grid-template-columns:repeat(auto-fill,minmax(min(235px,100%),1fr));align-items:start;gap:16px}
+    .saved-note-card,[data-theme="dark"] .saved-note-card{height:250px;min-height:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:20px;overflow:hidden}
+    .saved-note-card h2{font-size:18px;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .saved-note-card p{font-size:14px;line-height:1.65;-webkit-line-clamp:7;color:var(--text)}
+    #savedNoteDescription,#savedNoteTitle,#manuscriptTitle,#manuscriptText,#noteText{border:0!important;outline:none!important;box-shadow:none!important;background:transparent!important;color:var(--text);border-radius:0}
+    #noteDragHandle>div:first-child{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#noteDragHandle>div:first-child>span{width:100%}
+    #noteRecallList{max-height:180px;overflow:auto;padding:8px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+    #floatingNote #noteRecallList button{display:block;width:100%;height:auto;min-height:38px;text-align:left;font-size:13px;padding:8px;overflow-wrap:anywhere}
+    .note-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}#floatingNote #noteSave{width:auto;padding:6px 12px;background:#557d94;color:white;font-size:13px}
+    .manuscript-tools{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}.manuscript-tools select,.manuscript-tools button{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;max-width:100%}
+    #manuscriptCards{grid-template-columns:repeat(6,minmax(0,1fr))}.manuscript-card{border:1px solid var(--line);border-top:4px solid #7297ab;border-radius:14px;background:var(--surface);min-width:0;display:flex;flex-direction:column;overflow:hidden}
+    .manuscript-open{display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0;min-height:190px;padding:20px 14px;background:none;border:0;color:var(--text);text-align:left;cursor:pointer}.manuscript-open h2{font-size:17px;overflow-wrap:anywhere}.manuscript-open time{margin-top:auto;font-size:11px;color:var(--muted)}
+    .manuscript-actions{display:flex;gap:3px;flex-wrap:wrap;padding:8px;border-top:1px solid var(--line)}.manuscript-actions button{border:0;background:transparent;color:var(--muted);padding:7px;font-size:12px;cursor:pointer}
+    #manuscriptCards.file-list{grid-template-columns:1fr;gap:8px}.file-list .manuscript-card{flex-direction:row;border-top-width:1px;align-items:center}.file-list .manuscript-open{min-height:72px;display:grid;grid-template-columns:70px minmax(0,1fr) 155px;gap:18px;align-items:center;padding:12px 18px}.file-list .manuscript-open time{margin:0}.file-list .manuscript-actions{border:0}.file-list h2{margin:0}
+    #manuscriptDialog{padding:0;height:min(850px,calc(100dvh - 48px));border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);box-shadow:0 24px 80px #0005;overflow:hidden}#manuscriptDialog[open]{display:flex;flex-direction:column}#manuscriptDialog::backdrop{background:#192d3d55;backdrop-filter:blur(8px)}
+    #manuscriptText{font-size:16px;line-height:1.85}#manuscriptDialog .editor-footer{flex-shrink:0}
+    body.mobile #mobileNav button{min-width:0;flex:1;min-height:48px}body.mobile .story-card{padding:0}body.mobile .story-card-main{padding:18px 14px}body.mobile .story-card-settings{opacity:1;width:40px;height:40px;top:0;right:0}
+    body.mobile #savedNoteCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}body.mobile .saved-note-card{height:230px;padding:14px}body.mobile .saved-note-card h2{font-size:16px}body.mobile .saved-note-card p{font-size:13px}
+    body.mobile #manuscriptView{display:none}body.mobile #manuscriptCards{grid-template-columns:1fr}body.mobile .manuscript-card{flex-direction:column;align-items:stretch}body.mobile .manuscript-open{grid-template-columns:1fr;gap:6px;min-height:80px}body.mobile .manuscript-open .editor-label{display:none}body.mobile .manuscript-actions{justify-content:flex-end}body.mobile .manuscript-actions button{min-height:44px;padding:10px 14px}body.mobile #manuscriptStory{width:100%}body.mobile .manuscript-tools .select-wrap:first-child{width:100%}
+    body.mobile #manuscriptDialog{width:100%;height:var(--usable-height,100dvh);max-height:none;margin:0;inset:0;border-radius:0}body.mobile #manuscriptDialog .saved-note-body{padding:20px}body.mobile #manuscriptDialog .editor-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    @media(max-width:380px){body.mobile #savedNoteCards{grid-template-columns:1fr}}
+
+</style>
 </head>
 
 <body>
   <main class="page">
     <header class="app-header">
       <a class="brand" href="#" aria-label="Worldbuilding"><span class="brand-mark" aria-hidden="true">W</span><span>Worldbuilding</span></a>
-      <div class="header-actions">
+      <div class="header-actions"><button id="mobileMore" type="button" class="mobile-only reading-toggle" aria-label="Menu halaman">⋯</button>
         <button id="newStory" class="new-story" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8Z M14 3v5h5M8 13h8M8 17h6"/></svg>New story</button>
 
       </div>
     </header>
 
+    <section id="dashboardPage" class="collection-page" aria-labelledby="dashboardHeading" hidden><div class="collection-heading"><div><span class="editor-label">RUANG KERJA</span><h1 id="dashboardHeading">Story</h1><p>Pilih cerita atau mulai yang baru.</p></div></div><p id="activeStoryNotice" role="status" hidden></p><div id="storyCards" class="collection-grid"></div></section>
+    <section id="manuscriptPage" class="collection-page" hidden><div class="collection-heading"><div><span class="editor-label">DOKUMEN</span><h1>Naskah</h1><p id="manuscriptStoryLabel"></p></div><button id="newManuscript" class="new-story" type="button">＋ Naskah</button></div><div class="manuscript-tools"><select id="manuscriptStory" aria-label="Story naskah"></select><select id="manuscriptSort" aria-label="Urutkan naskah"><option value="date">Terakhir diubah</option><option value="name">Nama A–Z</option></select><button id="manuscriptView" type="button" title="Ganti tampilan kartu atau daftar">Tampilan daftar</button></div><div id="manuscriptCards" class="collection-grid"></div><p id="manuscriptEmpty"></p></section><section id="savedNotesPage" class="collection-page" aria-labelledby="savedNotesHeading" hidden><div class="collection-heading"><div><span class="editor-label">CATATAN</span><h1 id="savedNotesHeading">Catatan tersimpan</h1><p>Ide dan tulisan yang ingin disimpan.</p></div></div><div id="savedNoteCards" class="collection-grid"></div><p id="savedNotesError" role="alert" hidden></p></section>
     <div class="toolbar story-toolbar">
       <div class="timeline-status"><div id="summary" class="summary">0 kejadian</div><div id="storage" class="storage">Tersimpan di perangkat</div></div>
       <div class="story-heading"><span id="activeStoryGenre" class="story-genre"></span><div class="story-heading-line"><h1><button id="storyToggle" class="story-toggle" type="button" aria-label="Pilih story" aria-controls="storyMenu" aria-haspopup="menu" aria-expanded="false" title="Pilih story"><span id="activeStoryTitle">Belum ada story</span><span class="chevron" aria-hidden="true"></span></button></h1><button id="editStory" class="reading-toggle" type="button" aria-label="Pengaturan story" title="Pengaturan story"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="var(--surface)"/><circle cx="16" cy="12" r="2" fill="var(--surface)"/><circle cx="10" cy="18" r="2" fill="var(--surface)"/></svg></button><button id="printStory" class="reading-toggle" type="button" aria-label="Pratinjau seluruh timeline" title="Cetak seluruh timeline"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7Z"/></svg></button><button id="exportStoryMenuButton" class="reading-toggle" type="button" title="Export Story" aria-label="Export Story"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h7v7M21 3l-10 10M10 4H4v16h16v-6"/></svg></button></div></div>
@@ -1129,16 +1283,12 @@
           </section>
           <section class="editor-section">
             <div class="description-heading"><label id="descriptionLabel" class="editor-label">DESKRIPSI</label><button id="openReading" class="reading-toggle" type="button" aria-label="Pratinjau dokumen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
-            <div id="descriptionFormat" class="description-format" role="group" aria-label="Format deskripsi">
-              <button type="button" data-format="bold" aria-label="Bold" aria-pressed="false" title="Bold (Ctrl+B / ⌘B)"><b>B</b></button>
-              <button type="button" data-format="italic" aria-label="Italic" aria-pressed="false" title="Italic (Ctrl+I / ⌘I)"><i>I</i></button>
-              <button type="button" data-format="underline" aria-label="Underline" aria-pressed="false" title="Underline (Ctrl+U / ⌘U)"><u>U</u></button>
-            </div>
             <div id="editorDescription" class="clean-field clean-description" contenteditable="true" role="textbox" aria-labelledby="descriptionLabel" aria-multiline="true" data-placeholder="Masukkan deskripsi" spellcheck="false" autocorrect="off" autocapitalize="off"></div>
           </section>
         </div>
 
         <div class="editor-footer">
+          <div class="mobile-only mobile-edit-tools"><button type="button" data-edit-history="-1" aria-label="Undo">↶</button><button type="button" data-edit-history="1" aria-label="Redo">↷</button><button id="mobileFormatToggle" type="button" aria-expanded="false">Format</button><span id="mobileFormatControls" hidden><button type="button" data-mobile-format="bold"><b>B</b></button><button type="button" data-mobile-format="italic"><i>I</i></button><button type="button" data-mobile-format="underline"><u>U</u></button></span></div>
           <span class="editor-help">Enter: paragraf · Shift+Enter: baris baru</span>
           <button id="editorSave" class="save-btn" type="button">Simpan</button>
         </div>
@@ -1151,17 +1301,32 @@
     </section>
   </main>
 
+  <nav id="mobileNav" class="mobile-only" aria-label="Navigasi utama"><button type="button" data-mobile-page="Dashboard">▦<span>Story</span></button><button type="button" data-mobile-page="Naskah">▤<span>Naskah</span></button><button type="button" data-mobile-page="Catatan">▤<span>Catatan</span></button><button type="button" data-mobile-page="Pengaturan">⚙<span>Pengaturan</span></button></nav>
+  <button id="mobileAddEvent" class="mobile-only save-btn" type="button">＋ Kejadian</button>
+  <dialog id="mobileComposerDialog" data-modal-size="medium" aria-label="Tambah kejadian"><div class="max-editor-head"><strong>Kejadian baru</strong><button id="mobileComposerClose" class="close" type="button" aria-label="Batal menambah kejadian">×</button></div></dialog>
+  <div id="mobileActionSheet" class="mobile-action-sheet" popover="auto" role="menu" aria-label="Pilihan tindakan"></div>
   <aside id="mainMenu" class="main-menu" aria-label="Menu utama">
     <nav class="main-navigation" aria-label="Menu utama">
+      <button type="button" data-section="Dashboard" title="Dashboard" aria-label="Dashboard"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3h7v7H3Z M14 3h7v7h-7Z M3 14h7v7H3Z M14 14h7v7h-7Z"/></svg><span class="nav-label">Dashboard</span></button>
+      <button type="button" data-section="Naskah" title="Naskah"><span class="nav-icon">▤</span><span class="nav-label">Naskah</span></button><button type="button" data-section="Catatan" title="Catatan tersimpan" aria-label="Catatan tersimpan"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 3h14v18H5Z M8 8h8 M8 12h8 M8 16h5"/></svg><span class="nav-label">Catatan</span></button>
       <button type="button" data-section="Timeline" title="Timeline" aria-label="Timeline" aria-current="page"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v18M6 6h13M6 12h9M6 18h13"/></svg><span class="nav-label">Timeline</span></button>
       <button type="button" data-section="Pengaturan" title="Pengaturan" aria-label="Pengaturan" ><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="var(--surface, #f8fafb)"/><circle cx="16" cy="12" r="2" fill="var(--surface, #f8fafb)"/><circle cx="10" cy="18" r="2" fill="var(--surface, #f8fafb)"/></svg><span class="nav-label">Pengaturan</span></button>
     </nav>
     <span class="main-menu-foot">Worldbuilding / ruang narasi</span>
   </aside>
   <div id="storyMenu" class="character-menu story-menu" popover="auto" role="menu" aria-label="Daftar story"></div>
-  <dialog id="downloadConfirm" class="new-story-dialog" aria-labelledby="downloadConfirmTitle"><h2 id="downloadConfirmTitle">Export Story</h2><p id="downloadConfirmText" class="story-modal-intro"></p><div class="confirm-actions"><button id="downloadConfirmCancel" class="cancel-delete" type="button">Batal</button><button id="downloadConfirmAccept" class="new-story" type="button">Unduh JSON</button></div></dialog>
-  <dialog id="maxEditorDialog" aria-label="Editor kejadian"><div class="max-editor-head"><span>Editor kejadian</span><button id="editorMinimize" class="close" type="button" title="Kembalikan ke panel" aria-label="Perkecil editor"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 9h6V3m12 6h-6V3M3 15h6v6m12-6h-6v6"/></svg></button></div></dialog>
-  <dialog id="newStoryDialog" class="new-story-dialog" aria-labelledby="newStoryHeading">
+  <dialog id="savedNoteDialog" data-modal-size="medium" aria-label="Edit catatan"><div class="max-editor-head"><span>Catatan tersimpan</span><button id="savedNoteClose" class="close" type="button" title="Simpan dan tutup" aria-label="Simpan dan tutup catatan">×</button></div><div class="saved-note-body"><input id="savedNoteTitle" type="text" class="saved-note-title" placeholder="Judul catatan" aria-label="Judul catatan" spellcheck="false" autocomplete="off"><textarea id="savedNoteDescription" class="saved-note-description" placeholder="Tulis catatan…" aria-label="Deskripsi catatan" spellcheck="false" autocorrect="off"></textarea><p id="savedNoteSaveError" role="alert" hidden></p></div><div class="editor-footer"><div class="mobile-only mobile-plain-tools"><button type="button" data-mobile-history-target="savedNoteDescription" data-direction="-1" aria-label="Undo catatan">↶</button><button type="button" data-mobile-history-target="savedNoteDescription" data-direction="1" aria-label="Redo catatan">↷</button></div><span class="editor-help">Tersimpan saat ditutup</span><button id="savedNoteSave" class="save-btn" type="button">Simpan</button></div></dialog>
+  <dialog id="manuscriptDialog" data-modal-size="large" aria-label="Editor naskah"><div class="max-editor-head"><span id="manuscriptOwner"></span><button id="manuscriptClose" type="button" class="close" title="Simpan dan tutup">×</button></div><div class="saved-note-body"><input id="manuscriptTitle" class="saved-note-title" placeholder="Judul naskah" aria-label="Judul naskah" spellcheck="false"><textarea id="manuscriptText" class="saved-note-description" placeholder="Mulai menulis…" aria-label="Isi naskah" spellcheck="false" autocorrect="off"></textarea><p id="manuscriptError" role="alert" hidden></p></div><div class="editor-footer"><button id="manuscriptExport" type="button" class="new-story">Export DOCX</button><button id="manuscriptSave" type="button" class="save-btn">Simpan</button></div></dialog><dialog id="manuscriptDelete" data-modal-size="small" class="new-story-dialog"><h2>Hapus naskah?</h2><p>Naskah ini akan dihapus dari story. Tindakan ini tidak dapat dibatalkan.</p><div class="confirm-actions"><button id="manuscriptDeleteCancel" type="button">Batal</button><button id="manuscriptDeleteAccept" type="button" class="confirm-delete">Hapus</button></div></dialog><aside id="floatingNote" popover="manual" role="dialog" aria-label="Catatan sementara">
+    <div id="noteDragHandle" class="note-head"><div><strong>Catatan</strong><button id="noteRecall" type="button" title="Buka catatan tersimpan" aria-label="Buka catatan tersimpan" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v15M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"/></svg></button><span>Catatan cepat</span></div><div class="note-actions">
+      <button id="noteResize" type="button" title="Perbesar / perkecil" aria-label="Perbesar catatan">⤢</button>
+      <button id="noteHide" type="button" title="Sembunyikan catatan" aria-label="Sembunyikan catatan">−</button>
+    </div></div>
+    <div id="noteRecallList" hidden></div><textarea id="noteText" aria-label="Isi catatan sementara" placeholder="Tulis catatan…" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+    <div class="mobile-only mobile-plain-tools"><button type="button" data-mobile-history-target="noteText" data-direction="-1" aria-label="Undo catatan">↶</button><button type="button" data-mobile-history-target="noteText" data-direction="1" aria-label="Redo catatan">↷</button></div><div class="note-foot"><span id="noteSaveStatus" role="status">Judul dibuat dari isi catatan.</span><button id="noteSave" type="button">Simpan</button></div>
+  </aside>
+  <dialog id="downloadConfirm" data-modal-size="small" class="new-story-dialog" aria-labelledby="downloadConfirmTitle"><h2 id="downloadConfirmTitle">Export Story</h2><p id="downloadConfirmText" class="story-modal-intro"></p><div class="confirm-actions"><button id="downloadConfirmCancel" class="cancel-delete" type="button">Batal</button><button id="downloadConfirmAccept" class="new-story" type="button">Unduh JSON</button></div></dialog>
+  <dialog id="maxEditorDialog" data-modal-size="large" aria-label="Editor kejadian"><div class="max-editor-head"><span>Editor kejadian</span><button id="editorMinimize" class="close" type="button" title="Kembalikan ke panel" aria-label="Perkecil editor"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 9h6V3m12 6h-6V3M3 15h6v6m12-6h-6v6"/></svg></button></div></dialog>
+  <dialog id="newStoryDialog" data-modal-size="medium" class="new-story-dialog" aria-labelledby="newStoryHeading">
     <div class="story-form-heading"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="newStoryHeading">Buat story baru</h2></div><button id="newStoryClose" class="close" type="button" aria-label="Tutup form story">×</button></div>
     <form id="newStoryForm" class="story-form">
       <p id="storyModalIntro" class="story-modal-intro">Setiap story memiliki timeline sendiri.</p><label class="editor-label" for="newStoryTitle">JUDUL CERITA</label>
@@ -1173,7 +1338,7 @@
       <div class="new-story-actions"><button id="storySubmit" class="new-story" type="submit">Tambah story</button></div>
     <section class="import-story-placeholder" aria-labelledby="importStoryLabel"><span id="importStoryLabel" class="editor-label">IMPOR STORY</span><p>JSON untuk data story, TXT untuk kejadian berformat.</p><input id="importStoryFile" type="file" accept=".json,.txt,application/json,text/plain" aria-label="Pilih file story"><p id="importStorySummary" role="status">Pilih file untuk melihat isinya.</p><button id="importStoryCommit" type="button" disabled>Impor sebagai story baru</button></section></form>
   </dialog>
-  <dialog id="storySettingsDialog" class="story-settings-dialog" aria-labelledby="storySettingsTitle">
+  <dialog id="storySettingsDialog" data-modal-size="medium" class="story-settings-dialog" aria-labelledby="storySettingsTitle">
     <div class="story-settings-header"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="storySettingsTitle">Pengaturan story</h2></div><button id="storySettingsClose" class="close" type="button" aria-label="Tutup pengaturan story">×</button></div>
     <form id="storySettingsForm">
       <div class="story-settings-body">
@@ -1185,13 +1350,13 @@
       <div class="story-settings-footer"><button id="deleteStory" class="delete-story-button" type="button">Hapus story</button><button id="saveStorySettings" class="new-story" type="submit">Simpan perubahan</button></div>
     </form>
   </dialog>
-  <dialog id="deleteStoryDialog" class="new-story-dialog" aria-labelledby="deleteStoryTitle"><h2 id="deleteStoryTitle">Hapus story?</h2><p id="deleteStoryMessage" class="story-modal-intro"></p><div class="confirm-actions"><button id="cancelStoryDelete" class="cancel-delete" type="button">Batal</button><button id="confirmStoryDelete" class="do-delete" type="button">Hapus story</button></div></dialog>
+  <dialog id="deleteStoryDialog" data-modal-size="small" class="new-story-dialog" aria-labelledby="deleteStoryTitle"><h2 id="deleteStoryTitle">Hapus story?</h2><p id="deleteStoryMessage" class="story-modal-intro"></p><div class="confirm-actions"><button id="cancelStoryDelete" class="cancel-delete" type="button">Batal</button><button id="confirmStoryDelete" class="do-delete" type="button">Hapus story</button></div></dialog>
   <div id="websiteContextMenu" class="character-menu website-context-menu" popover="auto" role="menu" aria-label="Menu halaman"></div>
-  <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
-    <div class="settings-header"><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="settingsTitle">Pengaturan</h2></div><button id="settingsClose" class="close" type="button" aria-label="Tutup pengaturan">×</button></div>
+  <dialog id="settingsDialog" data-modal-size="large" class="settings-dialog" aria-labelledby="settingsTitle">
+    <div class="settings-header"><button id="mobileSettingsBack" class="mobile-only close" type="button" aria-label="Kembali ke kategori">←</button><div><span class="story-modal-kicker">WORLDBUILDING</span><h2 id="settingsTitle">Pengaturan</h2></div><button id="settingsClose" class="close" type="button" aria-label="Tutup pengaturan">×</button></div>
     <div class="settings-layout"><nav id="settingsNav" class="settings-nav" role="tablist" aria-label="Kategori pengaturan" aria-orientation="vertical"></nav><div id="settingsContent" class="settings-content"></div></div>
   </dialog>
-  <dialog id="readingDialog" class="reading-dialog" aria-labelledby="readingTitle">
+  <dialog id="readingDialog" data-modal-size="large" class="reading-dialog" aria-labelledby="readingTitle">
     <button id="readingClose" class="close reading-close" type="button" aria-label="Tutup halaman teks">×</button>
     <article id="readingPage" class="reading-page"><div id="readingMeta" class="reading-meta"></div>
       <h1 id="readingTitle"></h1>
@@ -1214,7 +1379,7 @@
   </div>
 
   <div id="modalBackdrop" class="modal-backdrop"></div>
-  <div id="confirm" class="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div id="confirm" data-modal-size="small" class="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="confirm-icon">?</div>
     <h3 id="confirmTitle" class="confirm-title">Hapus kejadian?</h3>
     <p id="confirmText" class="confirm-text">Kejadian ini akan dihapus dari timeline.</p>
@@ -1246,6 +1411,9 @@
     };
 
     const $ = id => document.getElementById(id);
+    const mobileQuery=matchMedia("(max-width:780px), (pointer:coarse) and (max-width:1000px)");
+    function isMobile(){return mobileQuery.matches}
+    document.body.classList.toggle("mobile",isMobile());
     const editorDateInput=$("editorDateInput");
     const titleInput=$("titleInput"), addBtn=$("addBtn"), timelinePanel=$("timelinePanel"), summary=$("summary"), storage=$("storage");
     const editorPanel=$("editorPanel"), editorTitle=$("editorTitle"), editorDescription=$("editorDescription"), editorBody=$("editorBody");
@@ -1276,6 +1444,7 @@
           source={items:oldItems,stories:oldStories,activeStoryId:null};
         }
         const categories=["Fiksi","Non fiksi","Sejarah","Lainnya"];
+        source.stories.forEach(story=>{if(story)validateManuscripts(story.manuscripts)});
         const stories=source.stories.filter(x=>x&&typeof x.title==="string").map(x=>({
           ...x,id:x.id||newId(),title:x.title.trim()||"Tanpa judul",genre:categories.includes(x.genre)?x.genre:"Lainnya",dateMode:x.genre==="Fiksi"&&x.dateMode==="fictional"?"fictional":"real"
         }));
@@ -1371,7 +1540,7 @@
               <div class="card" data-edit="${item.id}" tabindex="0" role="button" aria-label="Pilih ${escapeHTML(item.title)}">
                 <div class="card-content">
                   <div class="card-copy">
-                    <div class="card-title">${escapeHTML(item.title)}</div>
+                    <button class="mobile-only mobile-card-actions" type="button" data-card-actions="${item.id}" aria-label="Pilihan kejadian" title="Pilihan kejadian">⋯</button><div class="card-title">${escapeHTML(item.title)}</div>
                     <div class="card-hint">${item.description ? escapeHTML(descriptionPreview(item.description)) : "Belum ada deskripsi"}</div>
                     ${(item.characters||[]).length?`<div class="card-characters" aria-label="Tokoh terkait">${item.characters.map(name=>`<span class="card-character">${escapeHTML(name)}</span>`).join("")}</div>`:""}
                   </div>
@@ -1382,10 +1551,11 @@
         </div>`;
 
       timelinePanel.querySelectorAll(".card[data-edit]").forEach(card=>{
-        card.addEventListener("click",()=>selectTimelineCard(card.dataset.edit));
-        card.addEventListener("dblclick",e=>{e.preventDefault();if(state.editorOpen&&state.editingId===card.dataset.edit){closeEditor();return}openEditor(card.dataset.edit)});
-        card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();if(!state.editorOpen||state.editingId!==card.dataset.edit)openEditor(card.dataset.edit)}});
+        card.addEventListener("click",e=>{if(e.target.closest(".mobile-card-actions"))return;if(isMobile())openEditor(card.dataset.edit);else selectTimelineCard(card.dataset.edit)});
+        card.addEventListener("dblclick",e=>{if(isMobile())return;e.preventDefault();if(state.editorOpen&&state.editingId===card.dataset.edit){closeEditor();return}openEditor(card.dataset.edit)});
+        card.addEventListener("keydown",e=>{if(e.target.closest(".mobile-card-actions"))return;if(e.key==="Enter"||e.key===" "){e.preventDefault();if(!state.editorOpen||state.editingId!==card.dataset.edit)openEditor(card.dataset.edit)}});
       });
+      timelinePanel.querySelectorAll("[data-card-actions]").forEach(button=>button.addEventListener("click",e=>{e.stopPropagation();openMobileActions(button.dataset.cardActions)}));
       updateActiveCard();
     }
     function updateActiveCard(){
@@ -1434,7 +1604,7 @@
       const next=[...state.items,item];
       if(!persistWorkspace(next)){showToast("Kejadian belum tersimpan. Coba lagi.");return}
       state.items=next;renderTimeline();timelinePanel.scrollTop=0;
-      titleInput.value="";titleInput.focus();showToast("Kejadian berhasil ditambahkan.");
+      titleInput.value="";if($("mobileComposerDialog").open)$("mobileComposerDialog").close();else titleInput.focus();showToast("Kejadian berhasil ditambahkan.");
     }
     addBtn.addEventListener("click",addItem);
     titleInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();addItem()}});
@@ -1494,7 +1664,8 @@
         const chip=document.createElement("span");chip.className="character-chip";chip.dataset.index=index;
         const label=document.createElement("button");label.type="button";label.className="character-name";label.textContent=name;
         label.setAttribute("aria-label",`Pilihan tokoh ${name}`);label.setAttribute("aria-haspopup","menu");
-        label.addEventListener("dblclick",e=>{e.preventDefault();beginCharacter(index)});
+        label.addEventListener("dblclick",e=>{if(!isMobile()){e.preventDefault();beginCharacter(index)}});
+        label.addEventListener("click",()=>{if(isMobile())openCharacterMenu(index)});
         label.addEventListener("contextmenu",e=>{e.preventDefault();openCharacterMenu(index)});
         chip.append(label);characterChips.append(chip);
       });
@@ -1582,12 +1753,22 @@
     mainMenu.addEventListener("pointerenter",()=>{clearTimeout(menuLeaveTimer);clearTimeout(menuHoverTimer);menuHoverTimer=setTimeout(openMainMenu,300)});
     mainMenu.addEventListener("pointerleave",()=>{clearTimeout(menuHoverTimer);clearTimeout(menuLeaveTimer);menuLeaveTimer=setTimeout(closeMainMenu,300)});
     mainMenu.addEventListener("focusin",openMainMenu);
-    mainMenu.addEventListener("focusout",e=>{if(!mainMenu.contains(e.relatedTarget))closeMainMenu()});
+    mainMenu.addEventListener("focusout",e=>{if(!mainMenu.contains(e.relatedTarget)&&!mainMenu.matches(":hover")){clearTimeout(menuLeaveTimer);menuLeaveTimer=setTimeout(closeMainMenu,300)}});
+    let currentPage="Dashboard",sessionStoryId=null;
     function activateSection(name){
       if(name==="Pengaturan"){openSettings();return}
-      timelinePanel.hidden=false;
-      document.querySelector(".toolbar").hidden=false;
-      document.querySelector(".composer").hidden=false;
+      const apply=()=>{
+        if(name!=="Timeline"&&state.editorOpen)hideEditor();
+        currentPage=name;if(name==="Timeline")sessionStoryId=state.activeStoryId;
+        $("manuscriptPage").hidden=name!=="Naskah";if(name==="Naskah")renderManuscripts();
+        $("dashboardPage").hidden=name!=="Dashboard";$("savedNotesPage").hidden=name!=="Catatan";
+        document.querySelector(".workspace").hidden=name!=="Timeline";
+        document.querySelector(".toolbar").hidden=name!=="Timeline";document.querySelector(".composer").hidden=name!=="Timeline";
+        timelinePanel.hidden=false;
+        mainMenu.querySelectorAll("[data-section]").forEach(button=>{if(button.dataset.section===name)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current")});
+        if(name==="Dashboard")renderDashboard();if(name==="Catatan")renderSavedNotes();syncMobileNavigation();
+      };
+      if(name!=="Timeline"&&state.editorOpen)requestEditorExit(apply);else apply();
     }
     mainMenu.querySelectorAll("[data-section]").forEach(button=>button.addEventListener("click",()=>activateSection(button.dataset.section)));
     function positionMainMenu(){
@@ -1627,7 +1808,9 @@
       $(prefix+"TimeOptions").hidden=$(prefix+"Category").value!=="Fiksi";
     }
     $("newStoryCategory").addEventListener("change",()=>updateTimeOptions("newStory"));
+    let storyImportOrigin="Dashboard";
     function openStoryForm(){
+      storyImportOrigin=currentPage;
       const open=()=>{
         if(state.editorOpen)hideEditor();
         closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
@@ -1655,10 +1838,10 @@
       const parsed=parseTimelineTXT(importText,settingsUseFictionalTime());
       $("storyImportStatus").textContent=`${parsed.records.length} kejadian siap ditambahkan${parsed.skipped?` · ${parsed.skipped} baris dilewati`:""}.`;
     }
-    function openStorySettings(){
+    function openStorySettings(targetId){
       const open=()=>{
         if(state.editorOpen)hideEditor();
-        const story=activeStory();if(!story)return;
+        const story=typeof targetId==="string"?stories.find(x=>x.id===targetId):activeStory();if(!story)return;
         closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
         settingsStoryId=story.id;importToken++;importText="";importReady=false;importBusy=false;
         $("storySettingsForm").reset();$("storySettingsName").value=story.title;$("storySettingsCategory").value=story.genre;$("storySettingsTimeMode").value=story.dateMode||"real";
@@ -1672,7 +1855,7 @@
     $("storySettingsTimeMode").addEventListener("change",showImportSummary);
     $("storySettingsClose").addEventListener("click",()=>storySettingsDialog.close());
     storySettingsDialog.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();storySettingsDialog.close()}});
-    storySettingsDialog.addEventListener("close",()=>{importToken++;importBusy=false;closeMainMenu();$("editStory").focus()});
+    storySettingsDialog.addEventListener("close",()=>{if(currentPage==="Dashboard")renderDashboard();importToken++;importBusy=false;closeMainMenu();$("editStory").focus()});
     $("storyImportFile").addEventListener("change",async e=>{
       const file=e.target.files[0],token=++importToken;importText="";importReady=false;importBusy=false;$("saveStorySettings").disabled=false;
       if(!file){$("storyImportStatus").textContent="Belum ada file.";return}
@@ -1708,7 +1891,7 @@
       if(!nextItems){$("storySettingsError").textContent="Ada keterangan waktu fiksi yang belum berupa tanggal nyata. Ubah keterangan tersebut menjadi dd/mm/yyyy sebelum mengganti sistem waktu.";$("storySettingsError").hidden=false;return}
       const nextStories=stories.map(x=>x.id===updated.id?updated:x);
       if(!persistWorkspace(nextItems,nextStories)){$("storySettingsError").textContent="Perubahan belum tersimpan. Coba lagi.";$("storySettingsError").hidden=false;return}
-      stories=nextStories;state.items=nextItems;renderStories();renderTimeline();storySettingsDialog.close();
+      stories=nextStories;state.items=nextItems;renderStories();renderTimeline();renderDashboard();storySettingsDialog.close();
       showToast(parsed.records.length?`Story disimpan · ${parsed.records.length} kejadian ditambahkan.`:"Pengaturan story berhasil disimpan.");
     });
     $("deleteStory").addEventListener("click",()=>{
@@ -1787,7 +1970,7 @@
         const active=section.id===id,tab=$(`settings-tab-${section.id}`);
         tab.setAttribute("aria-selected",String(active));tab.tabIndex=active?0:-1;$(`settings-panel-${section.id}`).hidden=!active;
       });
-      $("settingsContent").scrollTop=0;
+      $("settingsContent").scrollTop=0;if(isMobile()&&settingsDialog.open)settingsDialog.classList.add("settings-detail");
     }
     $("settingsNav").addEventListener("keydown",e=>{
       if(!["ArrowUp","ArrowDown","Home","End"].includes(e.key))return;
@@ -1804,7 +1987,7 @@
     applyTheme(document.documentElement.dataset.theme||"light");selectSettings("general");
     function openSettings(){
       closeMainMenu();closeMoreMenu();closeCharacterMenu();closeDatePicker();
-      settingsDialog.showModal();$("settingsClose").focus();
+      settingsDialog.classList.remove("settings-detail");settingsDialog.showModal();$("settingsClose").focus();
     }
     $("settingsClose").addEventListener("click",()=>settingsDialog.close());
     settingsDialog.addEventListener("close",()=>{closeMainMenu();document.querySelector(".brand").focus({preventScroll:true});requestAnimationFrame(closeMainMenu)});
@@ -1812,14 +1995,14 @@
 
     const websiteContextMenu=$("websiteContextMenu");
     function contextIcon(action){
-      const paths={preview:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",new:"M14 3H5v18h14V8Z M14 3v5h5 M8 14h8 M12 10v8",create:"M12 5v14 M5 12h14",duplicate:"M9 9h12v12H9Z M15 9V3H3v12h6",edit:"m4 16 12-12 4 4-12 12-5 1Z M14 6l4 4",delete:"M4 7h16 M9 7V3h6v4 M6 7l1 14h10l1-14"};
+      const paths={note:"M4 3h16v13l-5 5H4Z M15 21v-5h5 M8 8h8 M8 12h6",preview:"M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",new:"M14 3H5v18h14V8Z M14 3v5h5 M8 14h8 M12 10v8",create:"M12 5v14 M5 12h14",duplicate:"M9 9h12v12H9Z M15 9V3H3v12h6",edit:"m4 16 12-12 4 4-12 12-5 1Z M14 6l4 4",delete:"M4 7h16 M9 7V3h6v4 M6 7l1 14h10l1-14"};
       return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[action]||paths.create}"/></svg>`;
     }
     let contextItemId=null;
     function closeWebsiteContext(){if(websiteContextMenu.matches(":popover-open"))websiteContextMenu.hidePopover()}
     function startTimeline(){
       if(!activeStory()){openStoryForm();return}
-      activateSection("Timeline");titleInput.focus();
+      activateSection("Timeline");if(isMobile()){openMobileComposer();return}titleInput.focus();
     }
     function duplicateTimeline(id){
       const item=state.items.find(x=>x.id===id&&x.storyId===state.activeStoryId);
@@ -1831,6 +2014,7 @@
     }
     document.addEventListener("contextmenu",e=>{
       if(e.defaultPrevented)return;
+      if(isMobile())return;
       e.preventDefault();
       if(document.body.classList.contains("modal-open")){closeWebsiteContext();return}
       const card=e.target.closest(".card[data-edit]");
@@ -1838,7 +2022,7 @@
       const host=e.target.closest("dialog[open]")||document.body;
       host.append(websiteContextMenu);
       websiteContextMenu.classList.toggle("card-context",!!contextItemId);
-      const actions=contextItemId?[["preview","Pratinjau"],["duplicate","Duplikat"],["edit","Edit"],["delete","Hapus"]]:[["new","New story"],["create","Buat timeline"]];
+      const actions=contextItemId?[["preview","Pratinjau"],["duplicate","Duplikat"],["edit","Edit"],["delete","Hapus"]]:[["new","New story"],["create","Buat timeline"],["note",noteVisible?"Sembunyikan catatan":"Catatan sementara"]];
       websiteContextMenu.replaceChildren(...actions.map(([action,label])=>{const button=document.createElement("button");button.type="button";button.role="menuitem";button.dataset.action=action;button.innerHTML=contextIcon(action);const text=document.createElement("span");text.textContent=label;button.append(text);return button}));
       websiteContextMenu.setAttribute("aria-label",contextItemId?"Menu kejadian":"Menu halaman");
       websiteContextMenu.showPopover();
@@ -1857,6 +2041,7 @@
       else if(action==="delete")openDeleteConfirm(id);
       else if(action==="new")openStoryForm();
       else if(action==="create")startTimeline();
+      else if(action==="note")toggleNote();
     });
     websiteContextMenu.addEventListener("keydown",e=>{
       if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeWebsiteContext();timelinePanel.querySelector(`[data-edit="${contextItemId}"]`)?.focus()}
@@ -1865,12 +2050,12 @@
         buttons[e.key==="Home"?0:e.key==="End"?buttons.length-1:(index+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length].focus();
       }
     });
-    window.addEventListener("contextmenu",e=>e.preventDefault());
+    window.addEventListener("contextmenu",e=>{if(!isMobile())e.preventDefault()});
     window.addEventListener("resize",closeWebsiteContext);
     timelinePanel.addEventListener("scroll",closeWebsiteContext);
     let timelineDrag=null,suppressTimelineClick=false;
     timelinePanel.addEventListener("pointerdown",e=>{
-      if(e.button!==0||e.pointerType!=="mouse"||e.target.closest("button,a,input,select,[contenteditable]"))return;
+      if(isMobile()||e.button!==0||e.pointerType!=="mouse"||e.target.closest("button,a,input,select,[contenteditable]"))return;
       const rect=timelinePanel.getBoundingClientRect();if(e.clientX>rect.left+timelinePanel.clientWidth)return;
       suppressTimelineClick=false;timelineDrag={id:e.pointerId,y:e.clientY,top:timelinePanel.scrollTop,moved:false};
     });
@@ -2023,9 +2208,12 @@
       editorTitle.textContent=item.title;
       editorDescription.innerHTML=descriptionHTML(item);
       readDraft();
+      [editorTitle,editorDescription,$("editorFictionalTime"),characterInput].forEach(resetFieldHistory);
       animateLayout(()=>editorPanel.classList.add("open"));
       editorPanel.setAttribute("aria-hidden","false");
       editorPanel.inert=false;
+      document.body.classList.toggle("mobile-editing",isMobile());
+      if(isMobile()){document.querySelector(".app-header").inert=true;document.querySelector(".toolbar").inert=true;timelinePanel.inert=true;$("mobileNav").inert=true;$("mobileAddEvent").inert=true;$("editorClose").focus()}
       editorBody.scrollTop=0;
     }
     function hideEditor(){
@@ -2036,6 +2224,8 @@
       editorPanel.setAttribute("aria-hidden","true");
       editorPanel.inert=true;
       state.editorOpen=false;
+      document.body.classList.remove("mobile-editing");
+      document.querySelector(".app-header").inert=false;document.querySelector(".toolbar").inert=false;timelinePanel.inert=false;$("mobileNav").inert=false;$("mobileAddEvent").inert=false;
       state.editingId=null;
     }
     function closeEditor(){requestEditorExit(hideEditor)}
@@ -2060,7 +2250,7 @@
     function saveEditor(){
       if(commitDraftToState()){minimizeEditor();showToast("Perubahan berhasil disimpan.")}
     }
-    const formatButtons=[...$("descriptionFormat").querySelectorAll("[data-format]")];
+    const formatButtons=[];
     function updateDescriptionFormat(){
       const selection=getSelection();
       const inside=selection?.rangeCount&&editorDescription.contains(selection.anchorNode)&&editorDescription.contains(selection.focusNode);
@@ -2072,7 +2262,7 @@
         editorDescription.focus();const range=document.createRange();range.selectNodeContents(editorDescription);range.collapse(false);selection.removeAllRanges();selection.addRange(range);
       }
       document.execCommand("styleWithCSS",false,false);
-      document.execCommand(command,false,null);
+      document.execCommand(command,false,null);editorDescription.dispatchEvent(new Event("input",{bubbles:true}));
       readDraft();updateDescriptionFormat();
     }
     formatButtons.forEach(button=>{
@@ -2087,7 +2277,7 @@
         e.preventDefault();e.stopPropagation();document.execCommand("redo",false,null);readDraft();updateDescriptionFormat();return;
       }
       if(e.key==="Enter"&&!e.shiftKey){
-        e.preventDefault();e.stopPropagation();document.execCommand("insertParagraph",false,null);updateDescriptionFormat();return;
+        e.preventDefault();e.stopPropagation();document.execCommand("insertParagraph",false,null);editorDescription.dispatchEvent(new Event("input",{bubbles:true}));updateDescriptionFormat();return;
       }
       const command={b:"bold",i:"italic",u:"underline"}[e.key.toLowerCase()];
       if((e.ctrlKey||e.metaKey)&&!e.altKey&&command){e.preventDefault();e.stopPropagation();formatDescription(command)}
@@ -2203,7 +2393,7 @@
     $("doDelete").addEventListener("click",doDelete);
     modalBackdrop.addEventListener("click",closeDeleteConfirm);
     document.addEventListener("keydown",e=>{
-      if(!modalMode || e.isComposing)return;
+      if(e.target.closest?.("#floatingNote")||!modalMode || e.isComposing)return;
       if(e.key==="Enter"){
         e.preventDefault();e.stopImmediatePropagation();
         if(!e.repeat){
@@ -2297,7 +2487,7 @@
       const ids=new Set(),genres=["Fiksi","Non fiksi","Sejarah","Lainnya"];
       const importedStories=data.stories.map(story=>{
         if(!story||typeof story.id!=="string"||!story.id||ids.has(story.id)||typeof story.title!=="string"||!story.title.trim()||!genres.includes(story.genre)||!["real","fictional"].includes(story.dateMode)||story.dateMode==="fictional"&&story.genre!=="Fiksi")throw Error("Data story tidak valid.");
-        ids.add(story.id);return {id:story.id,title:story.title,genre:story.genre,dateMode:story.dateMode};
+        ids.add(story.id);return {id:story.id,title:story.title,genre:story.genre,dateMode:story.dateMode,manuscripts:validateManuscripts(story.manuscripts)};
       });
       const itemIds=new Set();
       const importedItems=data.items.map(item=>{
@@ -2332,7 +2522,7 @@
       const names=new Set(stories.map(x=>x.title)),idMap=new Map();
       const nextStories=prepared.stories.map(story=>{
         let title=story.title,index=1;while(names.has(title)){title=story.title+` (impor${index===1?"":" "+index})`;index++}names.add(title);
-        const id=newId();idMap.set(story.id,id);return {...story,id,title};
+        const id=newId();idMap.set(story.id,id);return {...story,id,title,manuscripts:(story.manuscripts||[]).map(doc=>({...doc,id:newId()}))};
       });
       return {stories:nextStories,items:prepared.items.map(item=>({...item,id:newId(),storyId:idMap.get(item.storyId),characters:[...item.characters]}))};
     }
@@ -2341,11 +2531,293 @@
       const imported=remapImportedStories(preparedStoryImport),nextStories=[...stories,...imported.stories],nextItems=[...state.items,...imported.items],active=imported.stories[0].id;
       if(!persistWorkspace(nextItems,nextStories,active)){$("importStorySummary").textContent="Impor gagal disimpan. Data lama tetap aman.";return}
       stories=nextStories;state.items=nextItems;state.activeStoryId=active;state.activeItemId=null;titleInput.value="";
-      renderStories();renderTimeline();newStoryDialog.close();timelinePanel.scrollTop=0;showToast("Story berhasil diimpor.");
+      renderStories();renderTimeline();newStoryDialog.close();activateSection(storyImportOrigin);timelinePanel.scrollTop=0;showToast("Story berhasil diimpor.");
     });
 
 
     renderTimeline();
+
+    const SAVED_NOTES_KEY="worldbuilding-notes-v1";
+    let savedNotes=[],savedNotesLoadError=false,editingSavedNoteId=null;
+    try{const raw=localStorage.getItem(SAVED_NOTES_KEY);if(raw){const parsed=JSON.parse(raw);if(!Array.isArray(parsed)||parsed.some(x=>!x||typeof x.id!=="string"||typeof x.title!=="string"||typeof x.description!=="string"))throw Error();savedNotes=parsed}}
+    catch{savedNotesLoadError=true}
+    function renderDashboard(){
+      const active=stories.find(x=>x.id===sessionStoryId);$("activeStoryNotice").hidden=!active;$("activeStoryNotice").textContent=active?"Story aktif: "+active.title:"";
+      const grid=$("storyCards");grid.replaceChildren();
+      [...stories].sort((a,b)=>a.title.localeCompare(b.title,"id")).forEach(story=>{
+        const card=document.createElement("article");card.className="story-card";card.classList.toggle("session-active",story.id===sessionStoryId);const open=document.createElement("button");open.type="button";open.className="story-card-main";
+        const genre=document.createElement("span");genre.className="editor-label";genre.textContent=story.genre;
+        const title=document.createElement("h2");title.textContent=story.title;
+        const count=document.createElement("p");count.textContent=state.items.filter(x=>x.storyId===story.id).length+" kejadian";
+        open.append(genre,title,count);open.addEventListener("click",()=>switchStory(story.id));const settings=document.createElement("button");settings.type="button";settings.className="story-card-settings";settings.textContent="⚙";settings.title="Pengaturan "+story.title;settings.setAttribute("aria-label",settings.title);settings.addEventListener("click",()=>openStorySettings(story.id));card.append(open,settings);grid.append(card);
+      });
+      const add=document.createElement("button");add.type="button";add.className="story-card add-collection-card";add.innerHTML='<span aria-hidden="true">＋</span><strong>New story</strong>';add.addEventListener("click",openStoryForm);grid.append(add);
+    }
+    function renderSavedNotes(){
+      const grid=$("savedNoteCards");grid.replaceChildren();
+      savedNotes.forEach(note=>{
+        const card=document.createElement("button");card.type="button";card.className="saved-note-card";
+        const title=document.createElement("h2");title.textContent=note.title||"Tanpa judul";
+        const text=document.createElement("p");text.textContent=note.description;card.append(title,text);card.addEventListener("click",()=>openSavedNote(note.id));grid.append(card);
+      });
+      const add=document.createElement("button");add.type="button";add.className="saved-note-card add-collection-card";add.innerHTML='<span aria-hidden="true">＋</span><strong>Catatan baru</strong>';add.disabled=savedNotesLoadError;add.addEventListener("click",()=>openSavedNote(null));grid.append(add);
+      $("savedNotesError").hidden=!savedNotesLoadError;$("savedNotesError").textContent="Catatan tersimpan belum dapat dibaca.";
+    }
+    function openSavedNote(id){
+      editingSavedNoteId=id;const note=savedNotes.find(x=>x.id===id);
+      $("savedNoteTitle").value=note?.title||"";$("savedNoteDescription").value=note?.description||"";$("savedNoteSaveError").hidden=true;
+      resetFieldHistory($("savedNoteTitle"));resetFieldHistory($("savedNoteDescription"));
+      $("savedNoteDialog").showModal();$("savedNoteTitle").focus();
+    }
+    function saveSavedNote(){
+      const title=$("savedNoteTitle").value.trim(),description=$("savedNoteDescription").value;
+      if(!editingSavedNoteId&&!title&&!description.trim()){$("savedNoteDialog").close();return}
+      const note={id:editingSavedNoteId||newId(),title:title||"Tanpa judul",description};
+      const next=editingSavedNoteId?savedNotes.map(x=>x.id===editingSavedNoteId?note:x):[...savedNotes,note];
+      try{if(savedNotesLoadError)throw Error();localStorage.setItem(SAVED_NOTES_KEY,JSON.stringify(next))}
+      catch{$("savedNoteSaveError").textContent="Gagal menyimpan. Teks tetap ada di sini.";$("savedNoteSaveError").hidden=false;return}
+      savedNotes=next;renderSavedNotes();$("savedNoteDialog").close();
+    }
+    $("savedNoteClose").addEventListener("click",saveSavedNote);$("savedNoteSave").addEventListener("click",saveSavedNote);
+    $("savedNoteDialog").addEventListener("cancel",e=>{e.preventDefault();saveSavedNote()});
+    $("savedNoteDialog").addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();saveSavedNote()}});
+    document.querySelector(".brand").addEventListener("click",e=>{e.preventDefault();activateSection("Dashboard")});
+
+    // One undo/redo stack per editable field, independent of browser-wide editing history.
+    const fieldHistories=new WeakMap();let historyApplying=false;
+    function historyField(target){return target?.closest?.('textarea,input:not([type="file"]):not([type="date"]):not([type="number"]),[contenteditable="true"],[contenteditable="plaintext-only"]')}
+    function fieldSnapshot(el){
+      const value=el.isContentEditable?el.innerHTML:el.value;
+      let start=0,end=0;
+      if(!el.isContentEditable){start=el.selectionStart||0;end=el.selectionEnd||start}
+      else{const selection=getSelection();if(selection?.rangeCount&&el.contains(selection.anchorNode)&&el.contains(selection.focusNode)){const range=selection.getRangeAt(0),prefix=document.createRange();prefix.selectNodeContents(el);prefix.setEnd(range.startContainer,range.startOffset);start=prefix.toString().length;prefix.setEnd(range.endContainer,range.endOffset);end=prefix.toString().length}}
+      return {value,start,end};
+    }
+    function resetFieldHistory(el){if(el)fieldHistories.set(el,{entries:[fieldSnapshot(el)],index:0})}
+    function recordField(el){
+      if(historyApplying)return;let h=fieldHistories.get(el);if(!h){resetFieldHistory(el);return}
+      const snapshot=fieldSnapshot(el);if(h.entries[h.index].value===snapshot.value){h.entries[h.index]=snapshot;return}
+      h.entries.splice(h.index+1);h.entries.push(snapshot);if(h.entries.length>300)h.entries.shift();h.index=h.entries.length-1;
+    }
+    function restoreField(el,snapshot){
+      if(el.isContentEditable){
+        el.innerHTML=snapshot.value;const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT),nodes=[];let node;while(node=walker.nextNode())nodes.push(node);
+        function point(offset){for(const node of nodes){if(offset<=node.length)return [node,offset];offset-=node.length}return nodes.length?[nodes.at(-1),nodes.at(-1).length]:[el,0]}
+        const range=document.createRange();range.setStart(...point(snapshot.start));range.setEnd(...point(snapshot.end));const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+      }else{el.value=snapshot.value;try{el.setSelectionRange(snapshot.start,snapshot.end)}catch{}}
+    }
+    function moveFieldHistory(el,direction){
+      recordField(el);const h=fieldHistories.get(el),index=h.index+direction;if(index<0||index>=h.entries.length)return;
+      historyApplying=true;try{h.index=index;restoreField(el,h.entries[index]);el.dispatchEvent(new Event("input",{bubbles:true}))}finally{historyApplying=false}
+    }
+    document.addEventListener("focusin",e=>{const el=historyField(e.target);if(el&&!fieldHistories.has(el))resetFieldHistory(el)},true);
+    document.addEventListener("beforeinput",e=>{
+      const el=historyField(e.target);if(!el)return;
+      if(e.inputType==="historyUndo"||e.inputType==="historyRedo"){e.preventDefault();e.stopImmediatePropagation();moveFieldHistory(el,e.inputType==="historyUndo"?-1:1)}
+      else recordField(el);
+    },true);
+    document.addEventListener("input",e=>{const el=historyField(e.target);if(el)recordField(el)},true);
+    window.addEventListener("keydown",e=>{
+      if(e.isComposing||!(e.ctrlKey||e.metaKey)||e.altKey)return;
+      const el=historyField(e.target),key=e.key.toLowerCase();if(!el)return;
+      if(key==="z"||key==="y"){e.preventDefault();e.stopImmediatePropagation();moveFieldHistory(el,key==="y"||e.shiftKey?1:-1)}
+      else if(el.isContentEditable&&["b","i","u"].includes(key))recordField(el);
+    },true);
+    document.querySelectorAll('input,textarea,[contenteditable]').forEach(el=>{if(historyField(el)===el)resetFieldHistory(el)});
+    document.addEventListener("reset",e=>queueMicrotask(()=>e.target.querySelectorAll("input,textarea").forEach(resetFieldHistory)),true);
+
+
+    function syncMobileNavigation(){
+      document.body.dataset.page=currentPage;
+      document.querySelectorAll("[data-mobile-page]").forEach(button=>button.setAttribute("aria-current",button.dataset.mobilePage===currentPage?"page":"false"));
+    }
+    $("mobileNav").addEventListener("click",e=>{const page=e.target.closest("[data-mobile-page]")?.dataset.mobilePage;if(page)activateSection(page)});
+    $("mobileSettingsBack").addEventListener("click",()=>settingsDialog.classList.remove("settings-detail"));
+    const composer=document.querySelector(".composer"),composerHome=composer.parentElement;
+    function openMobileComposer(){
+      if(!activeStory()){openStoryForm();return}
+      $("mobileComposerDialog").append(composer);composer.hidden=false;$("mobileComposerDialog").showModal();titleInput.focus();
+    }
+    $("mobileAddEvent").addEventListener("click",openMobileComposer);
+    $("mobileComposerClose").addEventListener("click",()=>$("mobileComposerDialog").close());
+    $("mobileComposerDialog").addEventListener("close",()=>{composerHome.append(composer);titleInput.value="";resetFieldHistory(titleInput);composer.hidden=currentPage!=="Timeline"});
+    function openMobileActions(id=null){
+      const sheet=$("mobileActionSheet");if(sheet.matches(":popover-open"))sheet.hidePopover();document.body.append(sheet);
+      const actions=id?[["preview","Pratinjau"],["duplicate","Duplikat"],["delete","Hapus"]]:currentPage==="Timeline"?[["settings","Pengaturan story"],["print","Pratinjau seluruh timeline"],["export","Export Story"],["note","Catatan sementara"]]:[["new","New story"],["note","Catatan sementara"]];
+      sheet.replaceChildren(...actions.map(([action,label])=>{const button=document.createElement("button");button.type="button";button.role="menuitem";button.textContent=label;
+        button.addEventListener("click",()=>{sheet.hidePopover();
+          if(action==="preview")previewTimeline(id);
+          else if(action==="delete")openDeleteConfirm(id);
+          else if(action==="duplicate"){const item=state.items.find(x=>x.id===id);if(item){state.pendingDeleteId=id;confirmName.textContent=item.title;openModal("duplicate")}}
+          else if(action==="settings")$("editStory").click();else if(action==="print")$("printStory").click();else if(action==="export")exportData(false);else if(action==="new")openStoryForm();else if(action==="note")toggleNote();
+        });return button}));
+      sheet.showPopover();
+    }
+    $("mobileMore").addEventListener("click",()=>openMobileActions());
+    document.querySelectorAll("[data-edit-history]").forEach(button=>button.addEventListener("click",()=>{editorDescription.focus();moveFieldHistory(editorDescription,Number(button.dataset.editHistory))}));
+    $("mobileFormatToggle").addEventListener("click",()=>{const controls=$("mobileFormatControls");controls.hidden=!controls.hidden;$("mobileFormatToggle").setAttribute("aria-expanded",String(!controls.hidden))});
+    document.querySelectorAll("[data-mobile-format]").forEach(button=>{button.addEventListener("pointerdown",e=>e.preventDefault());button.addEventListener("click",()=>formatDescription(button.dataset.mobileFormat))});
+    document.querySelectorAll("[data-mobile-history-target]").forEach(button=>button.addEventListener("click",()=>{const field=$(button.dataset.mobileHistoryTarget);field.focus();moveFieldHistory(field,Number(button.dataset.direction))}));
+    function syncMobileMode(){
+      document.body.classList.toggle("mobile",isMobile());
+      document.body.classList.toggle("mobile-editing",isMobile()&&state.editorOpen);
+      if(isMobile()){closeMainMenu();if(maxEditorDialog.open)minimizeEditor();
+        if(state.editorOpen){document.querySelector(".app-header").inert=true;document.querySelector(".toolbar").inert=true;timelinePanel.inert=true;$("mobileNav").inert=true;$("mobileAddEvent").inert=true}
+      }
+      if(!isMobile()){document.querySelector(".app-header").inert=false;document.querySelector(".toolbar").inert=false;timelinePanel.inert=false;$("mobileNav").inert=false;$("mobileAddEvent").inert=false;if($("mobileComposerDialog").open)$("mobileComposerDialog").close()}
+      $("editorClose").textContent=isMobile()?"←":"×";$("editorClose").setAttribute("aria-label",isMobile()?"Kembali":"Tutup editor");
+      $("readingClose").textContent=isMobile()?"←":"×";
+      $("readingClose").setAttribute("aria-label",isMobile()?"Kembali":"Tutup pratinjau");
+      syncMobileNavigation();
+    }
+    mobileQuery.addEventListener("change",syncMobileMode);
+    function syncViewport(){
+      const viewport=window.visualViewport;document.documentElement.style.setProperty("--usable-height",(viewport?.height||innerHeight)+"px");
+      const typing=!!document.activeElement?.closest('input,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]');
+      document.body.classList.toggle("keyboard-open",isMobile()&&typing&&!!viewport&&innerHeight-viewport.height>120);
+    }
+    window.visualViewport?.addEventListener("resize",syncViewport);document.addEventListener("focusin",syncViewport);document.addEventListener("focusout",()=>setTimeout(syncViewport,0));syncViewport();syncMobileMode();
+
+    // Scratchpad stays in memory until explicitly saved to the notes collection.
+    const notePanel=$("floatingNote"),noteText=$("noteText");
+    let noteVisible=false,notePositioned=false,noteExpanded=false,noteSmallSize=null,notePreviousFocus=null,noteConverting=false;
+    const noteDialogStack=[];
+    function clampNote(){
+      const r=notePanel.getBoundingClientRect();
+      notePanel.style.left=Math.max(12,Math.min(r.left,innerWidth-r.width-12))+"px";
+      notePanel.style.top=Math.max(12,Math.min(r.top,innerHeight-r.height-12))+"px";
+    }
+    function hostNote(){
+      const host=noteDialogStack.filter(x=>x.open).at(-1)||document.body;
+      if(notePanel.matches(":popover-open"))notePanel.hidePopover();
+      if(notePanel.parentElement!==host)host.append(notePanel);
+      if(noteVisible){notePanel.showPopover();clampNote()}
+    }
+    function toggleNote(){
+      if(noteVisible){hideNote();return}
+      notePreviousFocus=document.activeElement;noteVisible=true;hostNote();
+      if(!notePositioned){notePanel.style.left=Math.max(12,innerWidth-notePanel.offsetWidth-28)+"px";notePanel.style.top=Math.min(100,Math.max(12,innerHeight-notePanel.offsetHeight-12))+"px";notePositioned=true}
+      clampNote();noteText.focus({preventScroll:true});
+    }
+    function hideNote(){
+      noteVisible=false;if(notePanel.matches(":popover-open"))notePanel.hidePopover();
+      if(notePreviousFocus?.isConnected&&!notePreviousFocus.closest?.("[inert]"))notePreviousFocus.focus({preventScroll:true});
+    }
+    $("noteHide").addEventListener("click",hideNote);
+
+    document.querySelectorAll("dialog").forEach(dialog=>{
+      new MutationObserver(()=>{
+        const index=noteDialogStack.indexOf(dialog);if(index!==-1)noteDialogStack.splice(index,1);
+        if(dialog.open)noteDialogStack.push(dialog);
+        if(noteVisible)hostNote();
+      }).observe(dialog,{attributes:true,attributeFilter:["open"]});
+    });
+    $("noteResize").addEventListener("click",()=>{
+      if(!noteExpanded){noteSmallSize={width:notePanel.offsetWidth,height:notePanel.offsetHeight};notePanel.style.width="min(700px,calc(100vw - 24px))";notePanel.style.height="min(650px,calc(100dvh - 24px))"}
+      else{notePanel.style.width=noteSmallSize.width+"px";notePanel.style.height=noteSmallSize.height+"px"}
+      noteExpanded=!noteExpanded;$("noteResize").setAttribute("aria-label",noteExpanded?"Perkecil catatan":"Perbesar catatan");clampNote();
+    });
+    new ResizeObserver(()=>{if(noteVisible)clampNote()}).observe(notePanel);
+    window.addEventListener("resize",()=>{if(noteVisible)clampNote()});
+    let noteDrag=null;
+    $("noteDragHandle").addEventListener("pointerdown",e=>{
+      if(isMobile()||e.button!==0||e.target.closest("button"))return;
+      const r=notePanel.getBoundingClientRect();noteDrag={id:e.pointerId,x:e.clientX-r.left,y:e.clientY-r.top};e.currentTarget.setPointerCapture(e.pointerId);e.preventDefault();
+    });
+    $("noteDragHandle").addEventListener("pointermove",e=>{if(noteDrag?.id!==e.pointerId)return;notePanel.style.left=e.clientX-noteDrag.x+"px";notePanel.style.top=e.clientY-noteDrag.y+"px";clampNote()});
+    function endNoteDrag(){noteDrag=null}
+    $("noteDragHandle").addEventListener("pointerup",endNoteDrag);$("noteDragHandle").addEventListener("pointercancel",endNoteDrag);
+    notePanel.addEventListener("keydown",e=>{if(e.key==="Escape")e.preventDefault();e.stopPropagation()});
+    notePanel.addEventListener("contextmenu",e=>{e.preventDefault();e.stopPropagation()});
+    document.addEventListener("dblclick",e=>{
+      if(isMobile()||e.defaultPrevented||e.target.closest("button,a,input,textarea,select,[contenteditable],.card,.story-card,.saved-note-card,header,nav,.toolbar,.composer,.editor-panel,dialog,[popover]"))return;
+      e.preventDefault();toggleNote();
+    });
+
+    // Manuscripts live inside their owning story and travel with story JSON exports.
+    function validateManuscripts(value){
+      if(value===undefined)return [];
+      if(!Array.isArray(value))throw Error("Data naskah tidak valid.");
+      const ids=new Set();return value.map(d=>{if(!d||typeof d.id!=="string"||ids.has(d.id)||typeof d.title!=="string"||typeof d.text!=="string"||!Number.isFinite(d.updatedAt)||!Number.isFinite(d.createdAt))throw Error("Data naskah tidak valid.");ids.add(d.id);return {id:d.id,title:d.title,text:d.text,createdAt:d.createdAt,updatedAt:d.updatedAt}});
+    }
+    let manuscriptStoryId=null,manuscriptEditingId=null,manuscriptList=false,pendingManuscriptDelete=null;
+    function manuscriptOwner(){return stories.find(x=>x.id===manuscriptStoryId)}
+    function storeManuscripts(docs){
+      const next=stories.map(x=>x.id===manuscriptStoryId?{...x,manuscripts:docs}:x);
+      if(!manuscriptOwner()||!persistWorkspace(state.items,next)){showToast("Naskah belum tersimpan. Teks tetap tersedia.");return false}
+      stories=next;renderManuscripts();return true;
+    }
+    function renderManuscripts(){
+      if(!stories.some(x=>x.id===manuscriptStoryId))manuscriptStoryId=state.activeStoryId;
+      const select=$("manuscriptStory");select.replaceChildren();[...stories].sort((a,b)=>a.title.localeCompare(b.title,"id")).forEach(s=>{const o=document.createElement("option");o.value=s.id;o.textContent=s.title;select.append(o)});select.value=manuscriptStoryId||"";
+      const owner=manuscriptOwner();$("manuscriptStoryLabel").textContent=owner?"Naskah untuk "+owner.title:"Buat story terlebih dahulu.";$("newManuscript").disabled=!owner;
+      const grid=$("manuscriptCards");grid.replaceChildren();grid.classList.toggle("file-list",manuscriptList||isMobile());
+      const docs=[...(owner?.manuscripts||[])].sort($("manuscriptSort").value==="name"?(a,b)=>a.title.localeCompare(b.title,"id",{numeric:true}):(a,b)=>b.updatedAt-a.updatedAt);
+      $("manuscriptEmpty").textContent=owner&&!docs.length?"Belum ada naskah. Mulai dengan ＋ Naskah.":"";
+      docs.forEach(doc=>{
+        const card=document.createElement("article");card.className="manuscript-card";
+        const open=document.createElement("button");open.className="manuscript-open";open.type="button";
+        const label=document.createElement("span");label.className="editor-label";label.textContent="NASKAH";
+        const title=document.createElement("h2");title.textContent=doc.title;
+        const date=document.createElement("time");date.dateTime=new Date(doc.updatedAt).toISOString();date.textContent=new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(doc.updatedAt);date.title="Terakhir diubah";
+        open.append(label,title,date);open.onclick=()=>openManuscript(doc.id);
+        const actions=document.createElement("div");actions.className="manuscript-actions";
+        [["Edit",()=>openManuscript(doc.id)],["Duplikat",()=>storeManuscripts([...(manuscriptOwner().manuscripts||[]),{...doc,id:newId(),title:doc.title+" (salinan)",createdAt:Date.now(),updatedAt:Date.now()}])],["Hapus",()=>{pendingManuscriptDelete=doc.id;$("manuscriptDelete").showModal()}]].forEach(([title,action])=>{const b=document.createElement("button");b.type="button";b.textContent=title;b.onclick=action;actions.append(b)});
+        card.append(open,actions);grid.append(card);
+      });
+    }
+    function openManuscript(id){
+      if(!manuscriptOwner())return;manuscriptEditingId=id;
+      const doc=manuscriptOwner().manuscripts?.find(x=>x.id===id);
+      $("manuscriptOwner").textContent=manuscriptOwner().title;$("manuscriptTitle").value=doc?.title||"";$("manuscriptText").value=doc?.text||"";$("manuscriptError").hidden=true;
+      resetFieldHistory($("manuscriptTitle"));resetFieldHistory($("manuscriptText"));$("manuscriptDialog").showModal();$("manuscriptTitle").focus();
+    }
+    function saveManuscript(close=true){
+      const title=$("manuscriptTitle").value.trim(),text=$("manuscriptText").value,owner=manuscriptOwner();if(!owner)return false;
+      if(!manuscriptEditingId&&!title&&!text.trim()){if(close)$("manuscriptDialog").close();return false}
+      const old=owner.manuscripts?.find(x=>x.id===manuscriptEditingId),now=Date.now();
+      const doc={id:old?.id||newId(),title:title||"Tanpa judul",text,createdAt:old?.createdAt||now,updatedAt:old&&old.title===(title||"Tanpa judul")&&old.text===text?old.updatedAt:now};
+      if(!storeManuscripts(old?owner.manuscripts.map(x=>x.id===old.id?doc:x):[...(owner.manuscripts||[]),doc])){$("manuscriptError").textContent="Gagal menyimpan. Salin teks atau coba lagi.";$("manuscriptError").hidden=false;return false}
+      manuscriptEditingId=doc.id;if(close)$("manuscriptDialog").close();return doc;
+    }
+    $("manuscriptStory").onchange=e=>{manuscriptStoryId=e.target.value;renderManuscripts()};$("manuscriptSort").onchange=renderManuscripts;
+    $("manuscriptView").onclick=()=>{manuscriptList=!manuscriptList;$("manuscriptView").textContent=manuscriptList?"Tampilan kartu":"Tampilan daftar";renderManuscripts()};
+    $("newManuscript").onclick=()=>openManuscript(null);$("manuscriptSave").onclick=()=>saveManuscript();$("manuscriptClose").onclick=()=>saveManuscript();
+    $("manuscriptDialog").addEventListener("cancel",e=>{e.preventDefault();saveManuscript()});
+    $("manuscriptDeleteCancel").onclick=()=>$("manuscriptDelete").close();$("manuscriptDeleteAccept").onclick=()=>{if(storeManuscripts((manuscriptOwner()?.manuscripts||[]).filter(x=>x.id!==pendingManuscriptDelete)))$("manuscriptDelete").close()};
+    // A standards-based uncompressed ZIP package; no remote document library required.
+    function zipDocuments(files){
+      const encoder=new TextEncoder(),parts=[],central=[];let offset=0;
+      const u16=(v,n,x)=>v.setUint16(n,x,true),u32=(v,n,x)=>v.setUint32(n,x>>>0,true);
+      for(const [name,text] of Object.entries(files)){
+        const filename=encoder.encode(name),data=encoder.encode(text);let crc=0xffffffff;for(const byte of data){crc^=byte;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}crc=(crc^0xffffffff)>>>0;
+        const local=new Uint8Array(30+filename.length),lv=new DataView(local.buffer);u32(lv,0,0x04034b50);u16(lv,4,20);u32(lv,14,crc);u32(lv,18,data.length);u32(lv,22,data.length);u16(lv,26,filename.length);local.set(filename,30);
+        const entry=new Uint8Array(46+filename.length),cv=new DataView(entry.buffer);u32(cv,0,0x02014b50);u16(cv,4,20);u16(cv,6,20);u32(cv,16,crc);u32(cv,20,data.length);u32(cv,24,data.length);u16(cv,28,filename.length);u32(cv,42,offset);entry.set(filename,46);central.push(entry);parts.push(local,data);offset+=local.length+data.length;
+      }
+      const end=new Uint8Array(22),ev=new DataView(end.buffer);u32(ev,0,0x06054b50);u16(ev,8,central.length);u16(ev,10,central.length);u32(ev,12,central.reduce((n,x)=>n+x.length,0));u32(ev,16,offset);
+      return new Blob([...parts,...central,end],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+    }
+    function manuscriptDOCX(doc){
+      const xml=s=>String(s).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
+      const para=(s,title=false)=>`<w:p><w:pPr><w:spacing w:after="160" w:line="300"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="${title?32:22}"/>${title?"<w:b/>":""}</w:rPr><w:t xml:space="preserve">${xml(s)}</w:t></w:r></w:p>`;
+      return zipDocuments({"[Content_Types].xml":'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',"_rels/.rels":'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',"word/document.xml":'<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+para(doc.title,true)+doc.text.split(/\r?\n/).map(x=>para(x)).join("")+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>'});
+    }
+    $("manuscriptExport").onclick=()=>{const doc=saveManuscript(false);if(!doc)return;const url=URL.createObjectURL(manuscriptDOCX(doc)),a=document.createElement("a");a.href=url;a.download=(manuscriptOwner().title+" - "+doc.title).replace(/[<>:"/\\|?*\x00-\x1f]/g,"-").slice(0,160)+".docx";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+    let recalledNoteId=null;
+    $("noteRecall").onclick=()=>{
+      const list=$("noteRecallList");list.hidden=!list.hidden;$("noteRecall").setAttribute("aria-expanded",String(!list.hidden));list.replaceChildren();
+      if(!savedNotes.length)list.textContent="Belum ada catatan tersimpan.";
+      savedNotes.forEach(note=>{const b=document.createElement("button");b.type="button";b.textContent=note.title;b.onclick=()=>{if(noteText.value.trim()&&noteText.value!==savedNotes.find(x=>x.id===recalledNoteId)?.description){$("noteSaveStatus").textContent="Simpan isi saat ini sebelum membuka catatan lain.";return}recalledNoteId=note.id;noteText.value=note.description;resetFieldHistory(noteText);list.hidden=true;$("noteRecall").setAttribute("aria-expanded","false");noteText.focus()};list.append(b)});
+    };
+    $("noteSave").onclick=()=>{
+      const description=noteText.value;if(!description.trim()){hideNote();return}
+      const old=savedNotes.find(x=>x.id===recalledNoteId),title=old?.title||description.trim().split(/\n/)[0].slice(0,64);
+      const note={id:old?.id||newId(),title,description},next=old?savedNotes.map(x=>x.id===old.id?note:x):[...savedNotes,note];
+      try{if(savedNotesLoadError)throw Error();localStorage.setItem(SAVED_NOTES_KEY,JSON.stringify(next))}catch{$("noteSaveStatus").textContent="Gagal menyimpan. Teks tetap di sini.";return}
+      savedNotes=next;renderSavedNotes();noteText.value="";recalledNoteId=null;resetFieldHistory(noteText);$("noteRecallList").hidden=true;$("noteRecall").setAttribute("aria-expanded","false");hideNote();showToast("Catatan disimpan.");
+    };
+
+    activateSection("Dashboard");
     if(initialData.loadError)storage.textContent="Data tersimpan belum dapat dibaca";
     else if(initialData.migrated)persistWorkspace();
   </script>
