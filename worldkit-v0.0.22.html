@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WorldKit</title>
+  <style>
+    :root { --bg:#f3f4f6; --panel:#fff; --line:#d8dde5; --text:#202631; --muted:#6b7280; --blue:#2563a6; --blue-soft:#eaf2fc; --danger:#b4232d; }
+    * { box-sizing:border-box; }
+    html, body { width:100%; height:100%; }
+    body { margin:0; overflow:hidden; font-family:Arial, sans-serif; color:var(--text); background:var(--bg); }
+    button, input, textarea { font:inherit; }
+    button { cursor:pointer; border:1px solid #d4d9e0; border-radius:5px; padding:8px 10px; color:var(--text); background:#fff; transition:background-color .14s ease, border-color .14s ease, transform .14s ease; }
+    button:hover { border-color:#aeb7c2; background:#f7f8fa; }
+    button:active { transform:scale(.97); }
+    button.primary { border-color:var(--blue); color:#fff; background:var(--blue); }
+    button.danger { color:var(--danger); }
+    h1, h2, h3, p { margin:0; }
+    h1 { font-size:23px; } h2 { font-size:18px; } h3 { font-size:16px; }
+    .brand { display:flex; align-items:center; gap:8px; }
+    .version-wrap { position:relative; display:inline-flex; align-items:center; }
+    .version { padding:3px 7px; border:1px solid #b9d4ef; border-radius:999px; color:var(--blue); font-size:11px; font-weight:normal; line-height:1; cursor:help; }
+    .version-tooltip { position:absolute; z-index:20; top:calc(100% + 10px); left:50%; width:270px; padding:12px 14px; border:1px solid #c9d9ec; border-radius:8px; color:var(--text); background:#fff; box-shadow:0 10px 28px #1f29371f; font-size:12px; line-height:1.45; opacity:0; visibility:hidden; pointer-events:none; transform:translate(-50%,-4px); transition:opacity .18s ease 1s, transform .18s ease 1s, visibility 0s linear 1.18s; }
+    .version-wrap:hover .version-tooltip, .version-wrap:focus-within .version-tooltip { opacity:1; visibility:visible; transform:translate(-50%,0); transition-delay:1s; }
+    .version-tooltip strong { display:block; margin-bottom:6px; color:var(--blue); }
+    .version-tooltip ul { margin:0; padding-left:18px; }
+    .admin { height:100vh; display:grid; grid-template-rows:auto minmax(0,1fr); gap:12px; padding:16px; }
+    .topbar, .panel-head, .actions, .tabs { display:flex; align-items:center; gap:8px; }
+    .topbar, .panel-head { justify-content:space-between; }
+    .topbar { min-height:38px; }
+    .actions { flex-wrap:wrap; }
+    .workspace { min-height:0; display:grid; grid-template-columns:minmax(240px,28fr) minmax(280px,32fr) minmax(320px,40fr); gap:12px; }
+    .panel { min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #e1e5ea; border-radius:6px; background:var(--panel); transition:border-color .16s ease; }
+    .panel-head { flex:0 0 auto; min-height:64px; padding:13px 14px; border-bottom:1px solid var(--line); }
+    .panel-body { min-height:0; overflow-y:auto; padding:12px 14px; scrollbar-gutter:stable; }
+    .subtitle, .muted, .empty, .meta { color:var(--muted); }
+    .subtitle { margin-top:3px; font-size:12px; }
+    .empty { padding:28px 8px; text-align:center; line-height:1.5; }
+    .book-list, .title-list { display:grid; gap:7px; }
+    .book-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; padding:9px; border:1px solid #e2e6eb; border-radius:5px; cursor:pointer; transition:background-color .15s ease, border-color .15s ease, transform .15s ease; }
+    .book-row:hover { background:#f7f9fb; transform:translateY(-1px); }
+    .book-row.selected { border-color:#8eb5e2; background:var(--blue-soft); }
+    .book-name { min-width:0; overflow:hidden; font-weight:bold; text-overflow:ellipsis; white-space:nowrap; }
+    .book-title-wrap { min-width:0; display:flex; align-items:center; gap:9px; }
+    .book-cover { width:44px; height:52px; flex:0 0 auto; object-fit:contain; border:0; background:transparent; }
+    .icon-actions { display:flex; gap:5px; }
+    .icon-button { width:32px; height:30px; display:grid; place-items:center; padding:0; color:#55606d; font-size:16px; line-height:1; }
+    .tabs { gap:3px; overflow-x:auto; border-bottom:1px solid var(--line); }
+    .tab { flex:1; min-width:max-content; border:0; border-radius:0; padding:11px 9px; color:var(--muted); background:transparent; }
+    .tab.active { color:var(--blue); box-shadow:inset 0 -3px var(--blue); font-weight:bold; }
+    .title-button { width:100%; overflow:hidden; padding:10px; border-color:#e2e6eb; text-align:left; text-overflow:ellipsis; white-space:nowrap; transition:background-color .15s ease, border-color .15s ease, transform .15s ease; }
+    .title-button:hover { transform:translateX(2px); }
+    .title-button.selected { border-color:#8eb5e2; color:#174d82; background:var(--blue-soft); }
+    .timeline-button { display:flex; align-items:center; gap:10px; transition:transform .16s ease, opacity .16s ease; }
+    .timeline-order { flex:0 0 auto; min-width:26px; color:var(--blue); font-weight:bold; text-align:center; }
+    .timeline-button.dragging { opacity:.45; }
+    .info-card { margin-top:12px; padding:14px; border:1px solid var(--line); border-radius:7px; }
+    .info-row { padding:11px 0; border-bottom:1px solid #e8ebef; }
+    .info-row:last-child { border-bottom:0; }
+    .info-label { margin-bottom:5px; color:var(--muted); font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:.04em; }
+    .info-value { line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .editable-value { min-height:34px; margin:-6px; padding:6px; border:1px solid transparent; border-radius:5px; cursor:text; }
+    .editable-value:hover { border-color:#cbd5e1; background:#f8fafc; }
+    .editable-value:focus { outline:2px solid #93b9e5; border-color:transparent; background:#fff; }
+    .edit-hint { margin-top:8px; color:var(--muted); font-size:11px; }
+    dialog { width:min(520px,calc(100vw - 28px)); border:1px solid #e0e4e9; border-radius:7px; padding:0; box-shadow:0 14px 38px #0003; animation:dialog-in .16s ease-out; }
+    dialog::backdrop { background:#1118278a; }
+    .modal { padding:18px; }
+    .modal h2 { margin-bottom:14px; }
+    label { display:block; margin:11px 0; font-weight:bold; }
+    input, textarea { width:100%; margin-top:5px; padding:9px; border:1px solid #adb5bf; border-radius:5px; }
+    textarea { min-height:100px; resize:vertical; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+    .client-page { min-height:100vh; overflow:auto; background:#f5f6f8; }
+    .client-shell { width:100%; min-height:100vh; display:grid; grid-template-columns:minmax(0,40fr) minmax(260px,30fr) minmax(180px,20fr); gap:4vw; align-items:center; padding:5vh 5vw; }
+    .client-left, .client-center, .client-right { min-width:0; text-align:center; }
+    .client-left { display:grid; justify-items:center; gap:22px; }
+    .client-center { display:grid; justify-items:center; gap:18px; }
+    .client-right { align-self:start; }
+    .client-title { max-width:100%; font-size:clamp(36px,5vw,76px); font-weight:800; line-height:1.02; overflow-wrap:anywhere; }
+    .client-card { width:100%; height:68vh; min-height:320px; display:grid; place-items:center; overflow:hidden; }
+    .client-photo { display:block; width:100%; height:100%; object-fit:contain; border:0; border-radius:0; }
+    .client-placeholder { width:min(42vw,420px); aspect-ratio:1; display:grid; place-items:center; color:#9ca3af; font-weight:bold; text-align:center; }
+    .client-description { width:100%; color:#6b7280; font-size:14px; line-height:1.65; text-align:center; white-space:pre-wrap; }
+    .client-role { align-self:start; padding-top:5vh; font-size:clamp(16px,1.6vw,22px); font-weight:400; line-height:1.5; text-align:center; text-decoration:underline; text-underline-offset:7px; overflow-wrap:anywhere; }
+    .info-photo { width:100%; max-height:260px; margin-bottom:14px; border:1px solid var(--line); border-radius:7px; object-fit:contain; }
+    .photo-preview { display:block; width:110px; height:110px; margin-top:9px; border:1px solid var(--line); border-radius:7px; object-fit:cover; }
+    .photo-drop { min-height:132px; display:grid; place-items:center; margin-top:6px; padding:12px; border:2px dashed #9fb5ce; border-radius:8px; color:var(--muted); background:#f8fbff; text-align:center; cursor:pointer; }
+    .photo-drop:hover, .photo-drop.dragover { border-color:var(--blue); color:var(--blue); background:var(--blue-soft); }
+    .photo-drop .photo-preview { margin:0 0 7px; border:0; object-fit:contain; }
+    .info-photo-drop { min-height:180px; display:grid; place-items:center; margin-bottom:14px; padding:10px; border:2px dashed #b4c6da; border-radius:8px; color:var(--muted); background:#f8fbff; text-align:center; cursor:pointer; }
+    .info-photo-drop:hover, .info-photo-drop.dragover { border-color:var(--blue); color:var(--blue); background:var(--blue-soft); }
+    .info-photo-drop .info-photo { margin:0; border:0; }
+    .info-photo-caption { margin-top:8px; font-size:12px; }
+    #batchDialog { width:min(1100px,calc(100vw - 32px)); max-height:88vh; }
+    .batch-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px; }
+    .batch-head h2 { margin-bottom:4px; }
+    .batch-grid { max-height:calc(88vh - 105px); display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; overflow:auto; padding:2px; scrollbar-gutter:stable; }
+    .batch-card { min-width:0; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .batch-name { overflow:hidden; margin-bottom:9px; font-size:13px; font-weight:bold; text-overflow:ellipsis; white-space:nowrap; }
+    .batch-drop { height:190px; display:grid; place-items:center; overflow:hidden; padding:9px; border:2px dashed #b4c6da; border-radius:7px; color:var(--muted); background:#f8fbff; text-align:center; cursor:pointer; }
+    .batch-drop:hover, .batch-drop.dragover { border-color:var(--blue); color:var(--blue); background:var(--blue-soft); }
+    .batch-drop img { width:100%; height:150px; object-fit:contain; border:0; }
+    .batch-drop span { display:block; margin-top:5px; font-size:11px; }
+    @keyframes dialog-in { from { opacity:0; transform:translateY(6px) scale(.99); } to { opacity:1; transform:none; } }
+    @media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+    .client-nav { display:grid; grid-template-columns:38px minmax(180px,340px) 38px; align-items:center; gap:34px; }
+    .client-nav button { width:38px; height:38px; padding:0; border-color:#b9c5d3; font-size:22px; background:#fff; }
+    .client-current { overflow:hidden; font-size:clamp(25px,3vw,38px); font-weight:bold; text-align:center; text-overflow:ellipsis; white-space:nowrap; }
+    @media (max-width:900px) and (orientation:landscape) { .admin { padding:9px; gap:8px; } .workspace { grid-template-columns:minmax(190px,27fr) minmax(230px,33fr) minmax(260px,40fr); gap:8px; } .panel-head { padding:10px; } .panel-body { padding:9px; } }
+    @media (orientation:portrait), (max-width:760px) { body { overflow:auto; background:#fff; } .admin { height:auto; min-height:100vh; padding:10px; gap:10px; } .topbar { align-items:flex-start; flex-direction:column; } .actions { width:100%; } .topbar .actions button { flex:1; } .workspace { grid-template-columns:1fr; gap:10px; } .panel { min-height:300px; max-height:56vh; border-width:1px 0; border-radius:0; } .panel-head { min-height:56px; padding:10px 4px; } .panel-body { padding:9px 4px; } .book-row, .title-button { border-left:0; border-right:0; border-radius:0; } .book-row:hover, .title-button:hover { transform:none; } .subtitle { display:none; } .version-tooltip { left:0; transform:translate(0,-4px); } .version-wrap:hover .version-tooltip, .version-wrap:focus-within .version-tooltip { transform:translate(0,0); } #batchDialog { width:calc(100vw - 16px); max-height:92vh; } .batch-grid { grid-template-columns:repeat(2,minmax(0,1fr)); max-height:calc(92vh - 100px); } .batch-drop { height:150px; } .batch-drop img { height:110px; } .client-shell { grid-template-columns:1fr; gap:20px; padding:5vh 7vw; } .client-left { order:1; } .client-center { order:2; width:100%; } .client-right { order:3; padding-top:0; } .client-card { height:55vh; min-height:280px; } .client-nav { grid-template-columns:38px minmax(120px,1fr) 38px; gap:12px; } }
+  </style>
+</head>
+<body>
+  <div class="admin" id="admin">
+    <header class="topbar">
+      <div class="brand"><h1>WorldKit</h1><span class="version-wrap"><span class="version" tabindex="0">v0.0.22</span><span class="version-tooltip" role="tooltip"><strong>Perbaikan v0.0.22</strong><ul><li>CSS dan ikon lebih sederhana.</li><li>Animasi ringan dengan dukungan reduced motion.</li><li>Mobile dipadatkan tanpa keyboard otomatis.</li></ul></span></span></div>
+      <div class="actions"><button id="exportButton">Ekspor JSON</button><button id="importButton">Impor JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+    </header>
+    <main class="workspace">
+      <section class="panel">
+        <div class="panel-head"><div><h2>Daftar Buku</h2><p class="subtitle">Pilih buku yang akan dikelola.</p></div><button class="primary" id="addBook">+ Buku</button></div>
+        <div class="panel-body"><div class="book-list" id="books"></div></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><div><h2 id="bookPanelTitle">Panel Buku</h2><p class="subtitle" id="bookPanelSubtitle">Judul data dari buku terpilih.</p></div><div class="actions"><button class="icon-button" id="batchPhotos" title="Edit foto batch" aria-label="Edit foto batch" hidden>▧</button><button class="primary" id="addData" hidden>+ Character</button></div></div>
+        <div class="tabs" id="tabs" hidden><button class="tab active" data-type="characters">Character</button><button class="tab" data-type="timeline">Timeline</button><button class="tab" data-type="stories">Story</button></div>
+        <div class="panel-body"><div class="title-list" id="dataList"></div></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><div><h2>Info</h2><p class="subtitle">Data lengkap item yang dipilih.</p></div><div class="actions" id="infoActions"></div></div>
+        <div class="panel-body" id="recordDetail"></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="modal"><form class="modal" id="editor"><h2 id="modalTitle"></h2><div id="fields"></div><div class="modal-actions"><button type="button" id="cancelModal">Batal</button><button class="primary" type="submit">Simpan</button></div></form></dialog>
+  <dialog id="confirmDialog"><div class="modal"><h2 id="confirmTitle">Konfirmasi</h2><p id="confirmMessage"></p><div class="modal-actions"><button type="button" id="cancelConfirm">Batal</button><button class="danger" type="button" id="approveConfirm">Lanjutkan</button></div></div></dialog>
+  <dialog id="batchDialog"><div class="modal"><div class="batch-head"><div><h2 id="batchTitle">Edit Foto Batch</h2><p class="subtitle" id="batchSubtitle"></p></div><button type="button" id="closeBatch">Tutup</button></div><div class="batch-grid" id="batchGrid"></div></div></dialog>
+  <script>
+    const storageKey='worldkit-v0.0.9', legacyKey='data-saya', MAX_IMAGE_BYTES=180*1024;
+    const $=selector=>document.querySelector(selector), uid=()=>crypto.randomUUID();
+    const booksEl=$('#books'), dataListEl=$('#dataList'), detailEl=$('#recordDetail'), infoActions=$('#infoActions');
+    const modal=$('#modal'), editor=$('#editor'), fields=$('#fields');
+    let selectedBookId=null, selectedRecord=null, activeType='characters', editing=null, pendingConfirm=null, draggedTimelineId=null;
+    const make=(tag,value='',className='')=>{const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el;};
+    const button=(label,className,handler)=>{const el=make('button',label,className);el.type='button';el.addEventListener('click',handler);return el;};
+    function normalizeEntry(type,raw){const item={...raw,id:typeof raw?.id==='string'?raw.id:uid(),photo:typeof raw?.photo==='string'&&raw.photo.startsWith('data:image/')?raw.photo:''};if(type==='characters')item.name=String(raw?.name||'').trim();if(type==='timeline')item.event=String(raw?.event||'').trim();if(type==='stories')item.title=String(raw?.title||'').trim();return item;}
+    function normalizeBook(raw){return{id:typeof raw?.id==='string'?raw.id:uid(),title:String(raw?.title||raw?.book||raw?.name||'').trim(),notes:String(raw?.notes||''),photo:typeof raw?.photo==='string'&&raw.photo.startsWith('data:image/')?raw.photo:'',characters:(Array.isArray(raw?.characters)?raw.characters:[]).map(x=>normalizeEntry('characters',x)).filter(x=>x.name),timeline:(Array.isArray(raw?.timeline)?raw.timeline:[]).map(x=>normalizeEntry('timeline',x)).filter(x=>x.event),stories:(Array.isArray(raw?.stories)?raw.stories:Array.isArray(raw?.story)?raw.story:[]).map(x=>normalizeEntry('stories',x)).filter(x=>x.title)};}
+    const itemTitle=(type,item)=>type==='characters'?item.name:type==='timeline'?item.event:item.title;
+    function confirmAction(message,action,title='Konfirmasi'){ $('#confirmTitle').textContent=title;$('#confirmMessage').textContent=message;pendingConfirm=action;$('#confirmDialog').showModal(); }
+    function duplicateTitle(title,used){const base=title||'Tanpa Judul';let result=base,number=1;while(used.has(result.toLocaleLowerCase('id-ID'))){result=`${base} (duplicate ${number++})`;}used.add(result.toLocaleLowerCase('id-ID'));return result;}
+    function prepareImportedBook(raw,usedBookTitles,usedIds){const book=normalizeBook(raw);book.title=duplicateTitle(book.title,usedBookTitles);if(usedIds.has(book.id))book.id=uid();usedIds.add(book.id);['characters','timeline','stories'].forEach(type=>{const titles=new Set(),ids=new Set();book[type]=book[type].map(item=>{const next={...item};next[itemTitle(type,next)===next.name?'name':type==='timeline'?'event':'title']=duplicateTitle(itemTitle(type,next),titles);if(ids.has(next.id)||usedIds.has(next.id))next.id=uid();ids.add(next.id);usedIds.add(next.id);return next;});});return book;}
+    function mergeImported(current,incoming){const usedTitles=new Set(current.map(book=>book.title.toLocaleLowerCase('id-ID'))),usedIds=new Set();current.forEach(book=>{usedIds.add(book.id);['characters','timeline','stories'].forEach(type=>book[type].forEach(item=>usedIds.add(item.id)));});return [...current,...incoming.map(raw=>prepareImportedBook(raw,usedTitles,usedIds))];}
+    function getData(){try{const current=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(current))return current.map(normalizeBook).filter(x=>x.title);const old=JSON.parse(localStorage.getItem(legacyKey))||[];return Array.isArray(old)?old.map(normalizeBook).filter(x=>x.title):[];}catch{return[];}}
+    const save=data=>{try{localStorage.setItem(storageKey,JSON.stringify(data));return true;}catch{alert('Penyimpanan penuh. Kurangi jumlah atau ukuran foto, lalu coba lagi.');return false;}};
+    const selectedBook=()=>getData().find(book=>book.id===selectedBookId);
+    const typeLabel=type=>type==='characters'?'Character':type==='timeline'?'Timeline':'Story';
+    function openPreview(book,event){event.stopPropagation();window.open(`${location.pathname}?preview=${encodeURIComponent(book.id)}`,'_blank','noopener');}
+    function renderBooks(){const data=getData();booksEl.replaceChildren();if(!data.length){booksEl.append(make('p','Belum ada buku. Tambahkan buku pertama Anda.','empty'));return;}data.forEach(book=>{const row=document.createElement('div');row.className='book-row'+(book.id===selectedBookId?' selected':'');row.addEventListener('click',()=>{selectedBookId=book.id;selectedRecord=null;activeType='characters';render();});const title=make('div','','book-title-wrap');if(book.photo){const image=document.createElement('img');image.src=book.photo;image.alt='Foto book';image.className='book-cover';title.append(image);}title.append(make('div',book.title,'book-name'));row.append(title);const ops=make('div','','icon-actions');const preview=button('↗','icon-button',event=>openPreview(book,event));preview.title='Pratinjau client';preview.setAttribute('aria-label',`Pratinjau ${book.title}`);const edit=button('·','icon-button',event=>{event.stopPropagation();openBook(book);});edit.title='Edit buku';edit.setAttribute('aria-label',`Edit ${book.title}`);const remove=button('×','icon-button danger',event=>{event.stopPropagation();confirmAction(`Hapus buku “${book.title}” beserta seluruh datanya?`,()=>{save(getData().filter(x=>x.id!==book.id));if(selectedBookId===book.id){selectedBookId=null;selectedRecord=null;}render();},'Hapus Buku');});remove.title='Hapus buku';ops.append(preview,edit,remove);row.append(ops);booksEl.append(row);});}
+    function animateTimelineMove(container,moving,target,event){if(!moving||moving===target)return;const rows=[...container.querySelectorAll('[data-timeline-id]')],before=new Map(rows.map(row=>[row,row.getBoundingClientRect()])),insertAfter=event.clientY>target.getBoundingClientRect().top+target.offsetHeight/2;container.insertBefore(moving,insertAfter?target.nextElementSibling:target);rows.forEach(row=>{const first=before.get(row),last=row.getBoundingClientRect(),delta=first.top-last.top;if(delta){row.style.transition='none';row.style.transform=`translateY(${delta}px)`;requestAnimationFrame(()=>{row.style.transition='';row.style.transform='';});}});}
+    function saveTimelineOrder(bookId){const ids=[...dataListEl.querySelectorAll('[data-timeline-id]')].map(row=>row.dataset.timelineId),data=getData(),book=data.find(x=>x.id===bookId);if(!book)return;book.timeline=ids.map(id=>book.timeline.find(item=>item.id===id)).filter(Boolean);save(data);render();}
+    function renderPanel(){const book=selectedBook();const tabs=$('#tabs'),add=$('#addData'),batch=$('#batchPhotos');dataListEl.replaceChildren();if(!book){$('#bookPanelTitle').textContent='Panel Buku';$('#bookPanelSubtitle').textContent='Judul data dari buku terpilih.';tabs.hidden=true;add.hidden=true;batch.hidden=true;dataListEl.append(make('p','Klik salah satu buku di kolom Daftar Buku.','empty'));return;}$('#bookPanelTitle').textContent=book.title;$('#bookPanelSubtitle').textContent=`Daftar judul ${typeLabel(activeType)}.`;tabs.hidden=false;add.hidden=false;batch.hidden=!book[activeType].length;batch.title=`Edit foto ${typeLabel(activeType)} secara batch`;batch.setAttribute('aria-label',batch.title);add.textContent=`+ ${typeLabel(activeType)}`;tabs.querySelectorAll('.tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.type===activeType));const list=book[activeType];if(!list.length){dataListEl.append(make('p',`Belum ada ${typeLabel(activeType).toLowerCase()}.`,'empty'));return;}list.forEach((item,index)=>{const selected=selectedRecord?.type===activeType&&selectedRecord.id===item.id,row=button('',(activeType==='timeline'?'timeline-button ':'')+'title-button'+(selected?' selected':''),()=>{selectedRecord={type:activeType,id:item.id};render();});if(activeType==='timeline'){row.draggable=true;row.dataset.timelineId=item.id;row.append(make('span',String(index+1),'timeline-order'),make('span',itemTitle(activeType,item)));row.addEventListener('dragstart',()=>{draggedTimelineId=item.id;row.classList.add('dragging');});row.addEventListener('dragend',()=>{draggedTimelineId=null;row.classList.remove('dragging');saveTimelineOrder(book.id);});row.addEventListener('dragover',event=>{event.preventDefault();const moving=dataListEl.querySelector(`[data-timeline-id="${draggedTimelineId}"]`);animateTimelineMove(dataListEl,moving,row,event);});row.addEventListener('drop',event=>event.preventDefault());}else row.textContent=itemTitle(activeType,item);dataListEl.append(row);});}
+    function saveInlineField(type,itemId,key,value,element){const data=getData(),book=data.find(x=>x.id===selectedBookId),item=book?.[type]?.find(x=>x.id===itemId);if(!item)return;let next=value.trim();if(['name','event','title'].includes(key)){if(!next){element.textContent=item[key]||'-';return;}const used=new Set(book[type].filter(x=>x.id!==itemId).map(x=>String(x[key]||'').toLocaleLowerCase('id-ID')));next=duplicateTitle(next,used);}item[key]=next;if(save(data)){element.textContent=next||'-';detailEl.querySelector('h3').textContent=itemTitle(type,item);renderBooks();renderPanel();} }
+    async function saveInlinePhoto(type,itemId,file,afterSave=renderInfo){if(!file)return false;if(!file.type.startsWith('image/')){alert('File harus berupa gambar.');return false;}if(file.size>MAX_IMAGE_BYTES){alert('Ukuran foto maksimal 180 KB.');return false;}const data=getData(),book=data.find(x=>x.id===selectedBookId),item=book?.[type]?.find(x=>x.id===itemId);if(!item)return false;item.photo=await fileToDataUrl(file);if(save(data)){afterSave();return true;}return false;}
+    function infoPhotoEditor(item,type){const drop=make('div','','info-photo-drop'),input=document.createElement('input'),caption=make('div',item.photo?'Klik atau drop untuk mengganti foto':'Klik atau drop foto','info-photo-caption');input.type='file';input.accept='image/*';input.hidden=true;if(item.photo){const image=document.createElement('img');image.src=item.photo;image.alt=`Foto ${itemTitle(type,item)}`;image.className='info-photo';drop.append(image);}drop.append(caption,input);drop.addEventListener('click',()=>input.click());input.addEventListener('change',()=>saveInlinePhoto(type,item.id,input.files[0]));drop.addEventListener('dragover',event=>{event.preventDefault();drop.classList.add('dragover');});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',event=>{event.preventDefault();drop.classList.remove('dragover');saveInlinePhoto(type,item.id,event.dataTransfer.files[0]);});return drop;}
+    function openBatchPhotos(){const book=selectedBook();if(!book||!book[activeType].length)return;const dialog=$('#batchDialog'),grid=$('#batchGrid');$('#batchTitle').textContent=`Foto Batch ${typeLabel(activeType)}`;$('#batchSubtitle').textContent=`${book.title} • klik atau drop foto pada kartu yang sesuai.`;grid.replaceChildren();book[activeType].forEach(item=>{const card=make('article','','batch-card'),name=make('div',itemTitle(activeType,item),'batch-name'),drop=make('div','','batch-drop'),input=document.createElement('input'),caption=make('span',item.photo?'Ganti foto':'Tambah foto');input.type='file';input.accept='image/*';input.hidden=true;if(item.photo){const image=document.createElement('img');image.src=item.photo;image.alt=`Foto ${itemTitle(activeType,item)}`;drop.append(image);}drop.append(caption,input);const upload=async file=>{const ok=await saveInlinePhoto(activeType,item.id,file,()=>{});if(ok){const image=drop.querySelector('img')||document.createElement('img');image.src=(await fileToDataUrl(file));image.alt=`Foto ${itemTitle(activeType,item)}`;if(!image.parentNode)drop.prepend(image);caption.textContent='Foto tersimpan';if(selectedRecord?.type===activeType&&selectedRecord.id===item.id)renderInfo();}};drop.addEventListener('click',()=>input.click());input.addEventListener('change',()=>upload(input.files[0]));drop.addEventListener('dragover',event=>{event.preventDefault();drop.classList.add('dragover');});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',event=>{event.preventDefault();drop.classList.remove('dragover');upload(event.dataTransfer.files[0]);});card.append(name,drop);grid.append(card);});dialog.showModal();}
+    function addStaticInfoRow(card,label,value){const row=make('div','','info-row');row.append(make('div',label,'info-label'),make('div',value||'-','info-value'));card.append(row);}
+    function addInfoRow(card,label,value,key,type,itemId){const row=make('div','','info-row'),content=make('div',value||'-','info-value editable-value');content.contentEditable='true';content.setAttribute('role','textbox');content.title='Klik untuk edit. Enter untuk simpan, Shift+Enter untuk baris baru.';content.addEventListener('focus',()=>{if(content.textContent==='-')content.textContent='';});content.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveInlineField(type,itemId,key,content.textContent,content);content.blur();}});row.append(make('div',label,'info-label'),content);card.append(row);}
+    function renderInfo(){const book=selectedBook();detailEl.replaceChildren();infoActions.replaceChildren();if(!book||!selectedRecord){detailEl.append(make('p','Klik judul Character, Timeline, atau Story di Panel Buku untuk melihat data lengkap.','empty'));return;}const type=selectedRecord.type,item=book[type].find(x=>x.id===selectedRecord.id);if(!item){selectedRecord=null;renderInfo();return;}infoActions.append(button('Hapus','danger',()=>confirmAction(`Hapus ${typeLabel(type)} ini?`,()=>{const data=getData(),target=data.find(x=>x.id===book.id);target[type]=target[type].filter(x=>x.id!==item.id);save(data);selectedRecord=null;render();},'Hapus Data')));detailEl.append(make('h3',itemTitle(type,item)));const card=make('div','','info-card');card.append(infoPhotoEditor(item,type));if(type==='characters'){addInfoRow(card,'Nama',item.name,'name',type,item.id);addInfoRow(card,'Peran',item.role,'role',type,item.id);addInfoRow(card,'Deskripsi',item.description,'description',type,item.id);}if(type==='timeline'){addStaticInfoRow(card,'Urutan',String(book.timeline.findIndex(x=>x.id===item.id)+1));addInfoRow(card,'Peristiwa',item.event,'event',type,item.id);addInfoRow(card,'Waktu / Tanggal',item.date,'date',type,item.id);addInfoRow(card,'Detail',item.detail,'detail',type,item.id);}if(type==='stories'){addInfoRow(card,'Judul',item.title,'title',type,item.id);addInfoRow(card,'Status',item.status,'status',type,item.id);addInfoRow(card,'Ringkasan',item.summary,'summary',type,item.id);}card.append(make('p','Klik bidang untuk edit • Enter untuk simpan • Shift+Enter untuk baris baru','edit-hint'));detailEl.append(card);}
+    function render(){renderBooks();renderPanel();renderInfo();}
+    function field(name,label,type='text',value=''){const wrapper=document.createElement('label');wrapper.textContent=label;const input=type==='textarea'?document.createElement('textarea'):document.createElement('input');if(type!=='textarea')input.type=type;input.name=name;input.value=value;input.required=['title','name','event'].includes(name);wrapper.append(input);fields.append(wrapper);}
+    function photoField(current=''){const wrapper=document.createElement('label');wrapper.textContent='Foto (maks. 180 KB)';const input=document.createElement('input');input.type='file';input.name='photo';input.accept='image/*';input.hidden=true;const drop=make('div','','photo-drop'),preview=document.createElement('img'),prompt=make('span','Klik untuk memilih foto atau drop file di sini');preview.className='photo-preview';preview.alt='Pratinjau foto';if(current)preview.src=current;else preview.hidden=true;drop.append(preview,prompt);const showFile=file=>{if(!file)return false;if(!file.type.startsWith('image/')){alert('File harus berupa gambar.');return false;}if(file.size>MAX_IMAGE_BYTES){alert('Ukuran foto maksimal 180 KB.');return false;}const transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;const reader=new FileReader();reader.onload=()=>{preview.src=reader.result;preview.hidden=false;prompt.textContent=file.name;};reader.readAsDataURL(file);return true;};drop.addEventListener('click',()=>input.click());drop.addEventListener('dragover',event=>{event.preventDefault();drop.classList.add('dragover');});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',event=>{event.preventDefault();drop.classList.remove('dragover');showFile(event.dataTransfer.files[0]);});input.addEventListener('change',()=>showFile(input.files[0]));wrapper.append(input,drop);fields.append(wrapper);}
+    function showEditor(){modal.showModal();requestAnimationFrame(()=>{$('#cancelModal').focus({preventScroll:true});navigator.virtualKeyboard?.hide?.();});}
+    function openBook(book=null){editing={type:'book',id:book?.id||null};fields.replaceChildren();$('#modalTitle').textContent=book?'Edit Buku':'Tambah Buku';field('title','Judul Buku','text',book?.title||'');field('notes','Catatan','textarea',book?.notes||'');photoField(book?.photo||'');showEditor();}
+    function openChild(book,type,item=null){editing={type,bookId:book.id,id:item?.id||null};fields.replaceChildren();$('#modalTitle').textContent=`${item?'Edit':'Tambah'} ${typeLabel(type)}`;if(type==='characters'){field('name','Nama','text',item?.name||'');field('role','Peran','text',item?.role||'');field('description','Deskripsi','textarea',item?.description||'');photoField(item?.photo||'');}if(type==='timeline'){field('event','Peristiwa','text',item?.event||'');field('date','Waktu / Tanggal','text',item?.date||'');field('detail','Detail','textarea',item?.detail||'');}if(type==='stories'){field('title','Judul Story','text',item?.title||'');field('status','Status','text',item?.status||'');field('summary','Ringkasan','textarea',item?.summary||'');}showEditor();}
+    $('#addBook').addEventListener('click',()=>openBook());
+    $('#addData').addEventListener('click',()=>{const book=selectedBook();if(book)openChild(book,activeType);});
+    $('#batchPhotos').addEventListener('click',openBatchPhotos);
+    $('#closeBatch').addEventListener('click',()=>$('#batchDialog').close());
+    $('#tabs').addEventListener('click',event=>{const tab=event.target.closest('[data-type]');if(!tab)return;activeType=tab.dataset.type;selectedRecord=null;render();});
+    $('#cancelModal').addEventListener('click',()=>modal.close());
+    $('#cancelConfirm').addEventListener('click',()=>{pendingConfirm=null;$('#confirmDialog').close();});
+    $('#approveConfirm').addEventListener('click',()=>{const action=pendingConfirm;pendingConfirm=null;$('#confirmDialog').close();if(action)action();});
+    const fileToDataUrl=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
+    editor.addEventListener('submit',async event=>{event.preventDefault();const data=getData(),values=Object.fromEntries(new FormData(editor)),photoFile=editor.elements.photo?.files[0];delete values.photo;const uploadedPhoto=photoFile?await fileToDataUrl(photoFile):null;if(editing.type==='book'){const old=data.find(x=>x.id===editing.id),used=new Set(data.filter(x=>x.id!==old?.id).map(x=>x.title.toLocaleLowerCase('id-ID')));const book=old?{...old,title:duplicateTitle(values.title.trim(),used),notes:values.notes.trim(),photo:(uploadedPhoto??old.photo)||''}:{id:uid(),title:duplicateTitle(values.title.trim(),used),notes:values.notes.trim(),photo:uploadedPhoto||'',characters:[],timeline:[],stories:[]};if(old)save(data.map(x=>x.id===old.id?book:x));else{save([...data,book]);selectedBookId=book.id;}}else{const book=data.find(x=>x.id===editing.bookId);if(!book)return;const key=editing.type==='characters'?'name':editing.type==='timeline'?'event':'title',old=book[editing.type].find(x=>x.id===editing.id),used=new Set(book[editing.type].filter(x=>x.id!==old?.id).map(x=>String(x[key]).toLocaleLowerCase('id-ID'))),entry={...values,id:editing.id||uid(),photo:(uploadedPhoto??old?.photo)||''};entry[key]=duplicateTitle(values[key].trim(),used);book[editing.type]=editing.id?book[editing.type].map(x=>x.id===editing.id?entry:x):[...book[editing.type],entry];save(data);selectedRecord={type:editing.type,id:entry.id};}modal.close();render();});
+    $('#exportButton').addEventListener('click',()=>confirmAction('Ekspor seluruh data WorldKit sebagai file JSON?',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(getData(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='worldkit-data.json';link.click();URL.revokeObjectURL(url);},'Ekspor JSON'));
+    $('#importButton').addEventListener('click',()=>$('#importFile').click());
+    $('#importFile').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{const raw=JSON.parse(await file.text());if(!Array.isArray(raw))throw new Error();const incoming=raw.map(normalizeBook).filter(x=>x.title);if(raw.length&&!incoming.length)throw new Error();save(mergeImported(getData(),incoming));render();alert(`${incoming.length} buku berhasil ditambahkan. Data lama tetap tersimpan.`);}catch{alert('File JSON tidak valid.');}finally{event.target.value='';}});
+    function renderClient(bookId){const book=getData().find(x=>x.id===bookId);document.body.className='client-page';document.body.replaceChildren();const shell=make('main','','client-shell');if(!book||!book.characters.length){shell.append(make('p','Belum ada character untuk ditampilkan.','empty'));document.body.append(shell);return;}let index=0;const left=make('section','','client-left'),center=make('section','','client-center'),right=make('aside','','client-right'),title=make('h1','','client-title'),description=make('p','','client-description'),card=make('div','','client-card'),nav=make('nav','','client-nav'),current=make('div','','client-current'),role=make('div','','client-role');const draw=()=>{const character=book.characters[index];title.textContent=character.name;description.textContent=character.description||'Belum ada deskripsi.';role.textContent=character.role||'Belum ada peran';if(character.photo){const image=document.createElement('img');image.src=character.photo;image.alt=`Foto ${character.name}`;image.className='client-photo';card.replaceChildren(image);}else card.replaceChildren(make('div','Belum ada foto character','client-placeholder'));current.textContent=character.name;document.title=`${character.name} — ${book.title}`;};const previous=button('‹','',()=>{index=(index-1+book.characters.length)%book.characters.length;draw();}),next=button('›','',()=>{index=(index+1)%book.characters.length;draw();});previous.setAttribute('aria-label','Character sebelumnya');next.setAttribute('aria-label','Character berikutnya');nav.append(previous,current,next);left.append(title,description);center.append(card,nav);right.append(role);shell.append(left,center,right);document.body.append(shell);draw();}
+    const previewId=new URLSearchParams(location.search).get('preview');
+    if(previewId)renderClient(previewId);else render();
+  </script>
+</body>
+</html>
