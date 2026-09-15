@@ -109,29 +109,62 @@
     .client-current { overflow:hidden; font-size:clamp(25px,3vw,38px); font-weight:bold; text-align:center; text-overflow:ellipsis; white-space:nowrap; }
     @media (max-width:900px) and (orientation:landscape) { .admin { padding:9px; gap:8px; } .workspace { grid-template-columns:minmax(190px,27fr) minmax(230px,33fr) minmax(260px,40fr); gap:8px; } .panel-head { padding:10px; } .panel-body { padding:9px; } }
     @media (orientation:portrait), (max-width:760px) { body { overflow:auto; background:#fff; } .admin { height:auto; min-height:100vh; padding:10px; gap:10px; } .topbar { align-items:flex-start; flex-direction:column; } .actions { width:100%; } .topbar .actions button { flex:1; } .workspace { grid-template-columns:1fr; gap:10px; } .panel { min-height:300px; max-height:56vh; border-width:1px 0; border-radius:0; } .panel-head { min-height:56px; padding:10px 4px; } .panel-body { padding:9px 4px; } .book-row, .title-button { border-left:0; border-right:0; border-radius:0; } .book-row:hover, .title-button:hover { transform:none; } .subtitle { display:none; } .version-tooltip { left:0; transform:translate(0,-4px); } .version-wrap:hover .version-tooltip, .version-wrap:focus-within .version-tooltip { transform:translate(0,0); } #batchDialog { width:calc(100vw - 16px); max-height:92vh; } .batch-grid { grid-template-columns:repeat(2,minmax(0,1fr)); max-height:calc(92vh - 100px); } .batch-drop { height:150px; } .batch-drop img { height:110px; } .client-shell { grid-template-columns:1fr; gap:20px; padding:5vh 7vw; } .client-left { order:1; } .client-center { order:2; width:100%; } .client-right { order:3; padding-top:0; } .client-card { height:55vh; min-height:280px; } .client-nav { grid-template-columns:38px minmax(120px,1fr) 38px; gap:12px; } }
+    .mobile-nav, .mobile-sheet-backdrop { display:none; }
+    @media (min-width:761px) { .workspace { grid-template-columns:minmax(230px,26fr) minmax(300px,34fr) minmax(340px,40fr); max-width:1600px; width:100%; margin:0 auto; } }
+    @media (max-width:760px) {
+      body { overflow:hidden; }
+      .admin { height:100dvh; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); padding:9px 9px 72px; }
+      .topbar { min-height:76px; gap:8px; }
+      .workspace { min-height:0; display:block; }
+      .workspace > .panel { display:none; height:100%; min-height:0; max-height:none; border:1px solid #e5e7eb; border-radius:7px; }
+      .admin[data-mobile-view="books"] #bookPanel, .admin[data-mobile-view="characters"] #dataPanel, .admin[data-mobile-view="timeline"] #dataPanel, .admin[data-mobile-view="stories"] #dataPanel { display:flex; }
+      #dataPanel .tabs { display:none!important; }
+      .panel-head { padding:10px; }
+      .panel-body { padding:10px; }
+      .book-row, .title-button { border:1px solid #e5e7eb; border-radius:6px; }
+      .mobile-nav { position:fixed; z-index:40; right:0; bottom:0; left:0; height:64px; display:grid; grid-template-columns:repeat(4,1fr); padding:max(5px,env(safe-area-inset-bottom)) 8px 5px; border-top:1px solid #dde2e8; background:#fffffff5; backdrop-filter:blur(10px); }
+      .mobile-nav button { min-width:0; display:grid; justify-items:center; gap:2px; padding:5px 2px; border:0; color:#727b86; background:transparent; font-size:10px; }
+      .mobile-nav .nav-icon { font-size:19px; line-height:1; }
+      .mobile-nav button.active { color:var(--blue); font-weight:bold; }
+      .mobile-nav button:disabled { opacity:.38; }
+      #infoPanel { position:fixed; z-index:60; right:0; bottom:0; left:0; width:100%; height:min(78dvh,720px); display:flex; max-height:none; border:1px solid #d9dee5; border-radius:16px 16px 0 0; box-shadow:0 -14px 36px #11182726; transform:translateY(105%); transition:transform .22s ease; }
+      #infoPanel.sheet-open { transform:translateY(0); }
+      #infoPanel .panel-body { padding-bottom:max(24px,env(safe-area-inset-bottom)); }
+      .mobile-sheet-backdrop { position:fixed; z-index:50; inset:0; display:block; border:0; border-radius:0; padding:0; background:#11182755; opacity:0; visibility:hidden; transition:opacity .2s ease,visibility 0s linear .2s; }
+      .mobile-sheet-backdrop.visible { opacity:1; visibility:visible; transition-delay:0s; }
+      .mobile-close-info { width:34px; height:32px; padding:0; font-size:20px; }
+      .batch-grid { grid-template-columns:1fr 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="admin" id="admin">
     <header class="topbar">
-      <div class="brand"><h1>WorldKit</h1><span class="version-wrap"><span class="version" tabindex="0">v0.0.22</span><span class="version-tooltip" role="tooltip"><strong>Perbaikan v0.0.22</strong><ul><li>CSS dan ikon lebih sederhana.</li><li>Animasi ringan dengan dukungan reduced motion.</li><li>Mobile dipadatkan tanpa keyboard otomatis.</li></ul></span></span></div>
+      <div class="brand"><h1>WorldKit</h1><span class="version-wrap"><span class="version" tabindex="0">v0.0.23</span><span class="version-tooltip" role="tooltip"><strong>Perbaikan v0.0.23</strong><ul><li>Bar mobile Book, Character, Timeline, Story.</li><li>Info mobile menjadi panel geser dari bawah.</li><li>Layout desktop dan mobile lebih responsif.</li></ul></span></span></div>
       <div class="actions"><button id="exportButton">Ekspor JSON</button><button id="importButton">Impor JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
     </header>
     <main class="workspace">
-      <section class="panel">
+      <section class="panel" id="bookPanel">
         <div class="panel-head"><div><h2>Daftar Buku</h2><p class="subtitle">Pilih buku yang akan dikelola.</p></div><button class="primary" id="addBook">+ Buku</button></div>
         <div class="panel-body"><div class="book-list" id="books"></div></div>
       </section>
-      <section class="panel">
+      <section class="panel" id="dataPanel">
         <div class="panel-head"><div><h2 id="bookPanelTitle">Panel Buku</h2><p class="subtitle" id="bookPanelSubtitle">Judul data dari buku terpilih.</p></div><div class="actions"><button class="icon-button" id="batchPhotos" title="Edit foto batch" aria-label="Edit foto batch" hidden>▧</button><button class="primary" id="addData" hidden>+ Character</button></div></div>
         <div class="tabs" id="tabs" hidden><button class="tab active" data-type="characters">Character</button><button class="tab" data-type="timeline">Timeline</button><button class="tab" data-type="stories">Story</button></div>
         <div class="panel-body"><div class="title-list" id="dataList"></div></div>
       </section>
-      <section class="panel">
+      <section class="panel" id="infoPanel">
         <div class="panel-head"><div><h2>Info</h2><p class="subtitle">Data lengkap item yang dipilih.</p></div><div class="actions" id="infoActions"></div></div>
         <div class="panel-body" id="recordDetail"></div>
       </section>
     </main>
+    <button class="mobile-sheet-backdrop" id="mobileSheetBackdrop" type="button" aria-label="Tutup info"></button>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Navigasi data">
+      <button type="button" data-view="books"><span class="nav-icon">▤</span><span>Book</span></button>
+      <button type="button" data-view="characters"><span class="nav-icon">♙</span><span>Character</span></button>
+      <button type="button" data-view="timeline"><span class="nav-icon">≡</span><span>Timeline</span></button>
+      <button type="button" data-view="stories"><span class="nav-icon">□</span><span>Story</span></button>
+    </nav>
   </div>
   <dialog id="modal"><form class="modal" id="editor"><h2 id="modalTitle"></h2><div id="fields"></div><div class="modal-actions"><button type="button" id="cancelModal">Batal</button><button class="primary" type="submit">Simpan</button></div></form></dialog>
   <dialog id="confirmDialog"><div class="modal"><h2 id="confirmTitle">Konfirmasi</h2><p id="confirmMessage"></p><div class="modal-actions"><button type="button" id="cancelConfirm">Batal</button><button class="danger" type="button" id="approveConfirm">Lanjutkan</button></div></div></dialog>
@@ -141,9 +174,13 @@
     const $=selector=>document.querySelector(selector), uid=()=>crypto.randomUUID();
     const booksEl=$('#books'), dataListEl=$('#dataList'), detailEl=$('#recordDetail'), infoActions=$('#infoActions');
     const modal=$('#modal'), editor=$('#editor'), fields=$('#fields');
-    let selectedBookId=null, selectedRecord=null, activeType='characters', editing=null, pendingConfirm=null, draggedTimelineId=null;
+    let selectedBookId=null, selectedRecord=null, activeType='characters', editing=null, pendingConfirm=null, draggedTimelineId=null, mobileView='books';
     const make=(tag,value='',className='')=>{const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el;};
     const button=(label,className,handler)=>{const el=make('button',label,className);el.type='button';el.addEventListener('click',handler);return el;};
+    const isMobile=()=>matchMedia('(max-width:760px)').matches;
+    function closeMobileInfo(){selectedRecord=null;render();}
+    function syncMobileUI(){const admin=$('#admin');if(!admin)return;const info=$('#infoPanel'),backdrop=$('#mobileSheetBackdrop'),hasBook=!!selectedBook();if(!isMobile()){admin.removeAttribute('data-mobile-view');info.classList.remove('sheet-open');backdrop.classList.remove('visible');return;}if(!hasBook&&mobileView!=='books')mobileView='books';admin.dataset.mobileView=mobileView;$('#mobileNav').querySelectorAll('[data-view]').forEach(nav=>{const category=nav.dataset.view!=='books';nav.disabled=category&&!hasBook;nav.classList.toggle('active',nav.dataset.view===mobileView);});const showInfo=!!selectedRecord;info.classList.toggle('sheet-open',showInfo);backdrop.classList.toggle('visible',showInfo);if(showInfo&&!$('#mobileCloseInfo')){const close=button('⌄','icon-button mobile-close-info',closeMobileInfo);close.id='mobileCloseInfo';close.title='Tutup info';close.setAttribute('aria-label','Tutup info');infoActions.prepend(close);}}
+    function setMobileView(view){if(view!=='books'&&!selectedBookId){mobileView='books';syncMobileUI();return;}mobileView=view;if(view!=='books'){activeType=view;selectedRecord=null;render();}else{selectedRecord=null;render();}}
     function normalizeEntry(type,raw){const item={...raw,id:typeof raw?.id==='string'?raw.id:uid(),photo:typeof raw?.photo==='string'&&raw.photo.startsWith('data:image/')?raw.photo:''};if(type==='characters')item.name=String(raw?.name||'').trim();if(type==='timeline')item.event=String(raw?.event||'').trim();if(type==='stories')item.title=String(raw?.title||'').trim();return item;}
     function normalizeBook(raw){return{id:typeof raw?.id==='string'?raw.id:uid(),title:String(raw?.title||raw?.book||raw?.name||'').trim(),notes:String(raw?.notes||''),photo:typeof raw?.photo==='string'&&raw.photo.startsWith('data:image/')?raw.photo:'',characters:(Array.isArray(raw?.characters)?raw.characters:[]).map(x=>normalizeEntry('characters',x)).filter(x=>x.name),timeline:(Array.isArray(raw?.timeline)?raw.timeline:[]).map(x=>normalizeEntry('timeline',x)).filter(x=>x.event),stories:(Array.isArray(raw?.stories)?raw.stories:Array.isArray(raw?.story)?raw.story:[]).map(x=>normalizeEntry('stories',x)).filter(x=>x.title)};}
     const itemTitle=(type,item)=>type==='characters'?item.name:type==='timeline'?item.event:item.title;
@@ -167,7 +204,7 @@
     function addStaticInfoRow(card,label,value){const row=make('div','','info-row');row.append(make('div',label,'info-label'),make('div',value||'-','info-value'));card.append(row);}
     function addInfoRow(card,label,value,key,type,itemId){const row=make('div','','info-row'),content=make('div',value||'-','info-value editable-value');content.contentEditable='true';content.setAttribute('role','textbox');content.title='Klik untuk edit. Enter untuk simpan, Shift+Enter untuk baris baru.';content.addEventListener('focus',()=>{if(content.textContent==='-')content.textContent='';});content.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveInlineField(type,itemId,key,content.textContent,content);content.blur();}});row.append(make('div',label,'info-label'),content);card.append(row);}
     function renderInfo(){const book=selectedBook();detailEl.replaceChildren();infoActions.replaceChildren();if(!book||!selectedRecord){detailEl.append(make('p','Klik judul Character, Timeline, atau Story di Panel Buku untuk melihat data lengkap.','empty'));return;}const type=selectedRecord.type,item=book[type].find(x=>x.id===selectedRecord.id);if(!item){selectedRecord=null;renderInfo();return;}infoActions.append(button('Hapus','danger',()=>confirmAction(`Hapus ${typeLabel(type)} ini?`,()=>{const data=getData(),target=data.find(x=>x.id===book.id);target[type]=target[type].filter(x=>x.id!==item.id);save(data);selectedRecord=null;render();},'Hapus Data')));detailEl.append(make('h3',itemTitle(type,item)));const card=make('div','','info-card');card.append(infoPhotoEditor(item,type));if(type==='characters'){addInfoRow(card,'Nama',item.name,'name',type,item.id);addInfoRow(card,'Peran',item.role,'role',type,item.id);addInfoRow(card,'Deskripsi',item.description,'description',type,item.id);}if(type==='timeline'){addStaticInfoRow(card,'Urutan',String(book.timeline.findIndex(x=>x.id===item.id)+1));addInfoRow(card,'Peristiwa',item.event,'event',type,item.id);addInfoRow(card,'Waktu / Tanggal',item.date,'date',type,item.id);addInfoRow(card,'Detail',item.detail,'detail',type,item.id);}if(type==='stories'){addInfoRow(card,'Judul',item.title,'title',type,item.id);addInfoRow(card,'Status',item.status,'status',type,item.id);addInfoRow(card,'Ringkasan',item.summary,'summary',type,item.id);}card.append(make('p','Klik bidang untuk edit • Enter untuk simpan • Shift+Enter untuk baris baru','edit-hint'));detailEl.append(card);}
-    function render(){renderBooks();renderPanel();renderInfo();}
+    function render(){renderBooks();renderPanel();renderInfo();syncMobileUI();}
     function field(name,label,type='text',value=''){const wrapper=document.createElement('label');wrapper.textContent=label;const input=type==='textarea'?document.createElement('textarea'):document.createElement('input');if(type!=='textarea')input.type=type;input.name=name;input.value=value;input.required=['title','name','event'].includes(name);wrapper.append(input);fields.append(wrapper);}
     function photoField(current=''){const wrapper=document.createElement('label');wrapper.textContent='Foto (maks. 180 KB)';const input=document.createElement('input');input.type='file';input.name='photo';input.accept='image/*';input.hidden=true;const drop=make('div','','photo-drop'),preview=document.createElement('img'),prompt=make('span','Klik untuk memilih foto atau drop file di sini');preview.className='photo-preview';preview.alt='Pratinjau foto';if(current)preview.src=current;else preview.hidden=true;drop.append(preview,prompt);const showFile=file=>{if(!file)return false;if(!file.type.startsWith('image/')){alert('File harus berupa gambar.');return false;}if(file.size>MAX_IMAGE_BYTES){alert('Ukuran foto maksimal 180 KB.');return false;}const transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;const reader=new FileReader();reader.onload=()=>{preview.src=reader.result;preview.hidden=false;prompt.textContent=file.name;};reader.readAsDataURL(file);return true;};drop.addEventListener('click',()=>input.click());drop.addEventListener('dragover',event=>{event.preventDefault();drop.classList.add('dragover');});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',event=>{event.preventDefault();drop.classList.remove('dragover');showFile(event.dataTransfer.files[0]);});input.addEventListener('change',()=>showFile(input.files[0]));wrapper.append(input,drop);fields.append(wrapper);}
     function showEditor(){modal.showModal();requestAnimationFrame(()=>{$('#cancelModal').focus({preventScroll:true});navigator.virtualKeyboard?.hide?.();});}
@@ -178,6 +215,10 @@
     $('#batchPhotos').addEventListener('click',openBatchPhotos);
     $('#closeBatch').addEventListener('click',()=>$('#batchDialog').close());
     $('#tabs').addEventListener('click',event=>{const tab=event.target.closest('[data-type]');if(!tab)return;activeType=tab.dataset.type;selectedRecord=null;render();});
+    $('#mobileNav').addEventListener('click',event=>{const nav=event.target.closest('[data-view]');if(nav&&!nav.disabled)setMobileView(nav.dataset.view);});
+    $('#mobileSheetBackdrop').addEventListener('click',closeMobileInfo);
+    booksEl.addEventListener('click',event=>{if(isMobile()&&event.target.closest('.book-row')&&!event.target.closest('.icon-actions')){mobileView='characters';requestAnimationFrame(syncMobileUI);}});
+    addEventListener('resize',()=>{if(isMobile()&&!$('#admin').dataset.mobileView)mobileView='books';syncMobileUI();});
     $('#cancelModal').addEventListener('click',()=>modal.close());
     $('#cancelConfirm').addEventListener('click',()=>{pendingConfirm=null;$('#confirmDialog').close();});
     $('#approveConfirm').addEventListener('click',()=>{const action=pendingConfirm;pendingConfirm=null;$('#confirmDialog').close();if(action)action();});
