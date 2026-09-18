@@ -270,7 +270,13 @@ body.admin-dark .panel{background:#141a22;border-radius:8px}body.admin-dark .boo
 #videoPlayerDialog{width:min(920px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 48px);margin:auto;border-radius:16px;background:#10171d}.video-player-card{display:flex;flex-direction:column;padding:18px;background:#10171d}.video-player-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px;color:#fff}.video-player-head h2{min-width:0;font-size:18px;font-weight:400}.video-player-close{border:1px solid #c4953e!important;background:transparent!important;color:#fff}.video-player-frame{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#080b0e}
 @media(max-width:900px) and (orientation:landscape){.display-links{gap:4px}.display-link{padding:7px 6px;font-size:8px}#videoPlayerDialog{width:min(760px,calc(100vw - 32px))}.video-player-card{padding:12px}}
 
+/* v0.1.29 — loading awal data */
+.app-loading{position:fixed;z-index:2000;inset:0;display:grid;place-items:center;color:#34404d;background:rgba(248,250,252,.30);backdrop-filter:blur(18px) saturate(110%);-webkit-backdrop-filter:blur(18px) saturate(110%);opacity:1;visibility:visible;transition:opacity .24s ease,visibility .24s ease}
+.app-loading.is-leaving{opacity:0;visibility:hidden;pointer-events:none}.app-loading-content{display:grid;justify-items:center;gap:12px;background:transparent}.app-loading-spinner{width:30px;height:30px;border:2px solid rgba(55,121,203,.22);border-top-color:var(--blue);border-radius:50%;animation:app-loading-spin .75s linear infinite}.app-loading-label{font-size:13px;font-weight:400;letter-spacing:.04em}.admin-dark~.app-loading,.admin-dark .app-loading{color:#e8edf5;background:rgba(11,15,21,.28)}.admin-dark~.app-loading .app-loading-spinner,.admin-dark .app-loading-spinner{border-color:rgba(255,255,255,.18);border-top-color:#76aef2}@keyframes app-loading-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.app-loading-spinner{animation-duration:1.5s}.app-loading{transition-duration:.01ms}}
+
 </style></head><body>
+<div class="app-loading" id="appLoading" role="status" aria-live="polite" aria-label="Memuat data"><div class="app-loading-content"><span class="app-loading-spinner" aria-hidden="true"></span><span class="app-loading-label">Memuat data</span></div></div>
 <div class="admin" id="admin"><aside class="app-sidebar" aria-label="Navigasi utama"><nav class="sidebar-nav"><button class="sidebar-nav-button" id="navWorkspace" type="button" data-tooltip="Workspace" aria-label="Workspace" aria-current="page"></button><button class="sidebar-nav-button" id="navNotes" type="button" data-tooltip="Notes" aria-label="Notes"></button><button class="sidebar-nav-button" id="navSettings" type="button" data-tooltip="Settings" aria-label="Settings"></button></nav></aside><header class="topbar"><div class="brand"><h1>WorldKit</h1><span class="version-wrap"><span class="version" tabindex="0" aria-describedby="changelog">v0.1.6</span><span class="version-tooltip" id="changelog" role="tooltip"><strong>Pembaruan v0.1.6</strong><ul><li>Sidebar ikon 3%, tambahan ruang untuk Book.</li><li>Modal kaca dengan blur, radius, dan perlindungan perubahan.</li></ul></span></span></div><button id="mainMenu" class="icon-button" aria-label="Menu aplikasi" aria-haspopup="menu"></button><button id="exportButton" hidden></button><button id="importButton" hidden></button><input id="importFile" type="file" accept="application/json,.json" hidden></header>
 <main class="workspace">
 <section class="panel" id="bookPanel"><header class="panel-head header book"><div><h2>Daftar Buku</h2><p id="bookCount" class="subtitle">0 buku</p></div><button id="addBook" class="primary add-book">Tambah Buku</button></header><div class="panel-body container book"><div class="book-list" id="books"></div></div></section>
@@ -336,7 +342,7 @@ SOFTWARE.
 
 -->
 <script>
-    const APP_VERSION='0.1.28';
+    const APP_VERSION='0.1.29';
     const storageKey='worldkit-v0.0.9', legacyKey='data-saya', preferencesKey='worldkit-preferences-v1', syncKey='worldkit-indexeddb-sync-v1', indexedDbName='worldkit-storage-v1', indexedDbStore='workspace', indexedDbDisplaySettings='display-settings-v1', MAX_IMAGE_BYTES=5*1024*1024;
     const $=selector=>document.querySelector(selector), uid=()=>crypto.randomUUID();
     const booksEl=$('#books'), dataListEl=$('#dataList'), detailEl=$('#recordDetail'), infoActions=$('#infoActions');
@@ -486,7 +492,7 @@ SOFTWARE.
     function downloadJson(value,fileName){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=fileName;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
     function updateExportSelection(){const count=exportSelection.size,total=getData().length;$('#exportSelectionState').textContent=`${count} dari ${total} Book`;$('#confirmBookExport').disabled=count===0;}
     function openBookExport(){const books=getData(),list=$('#exportBookList');exportSelection=new Set(books.map(book=>book.id));$('#combineExport').checked=false;list.replaceChildren();if(!books.length)list.append(make('p','Belum ada Book untuk diekspor.','empty'));books.forEach(book=>{const card=button('','export-book-card',()=>{if(exportSelection.has(book.id))exportSelection.delete(book.id);else exportSelection.add(book.id);card.setAttribute('aria-pressed',String(exportSelection.has(book.id)));updateExportSelection();});card.setAttribute('aria-pressed','true');card.append(make('span',book.title,'export-book-title'),make('span',`${book.characters.length} Character · ${book.timeline.length} Timeline · ${book.stories.length} Story`,'export-book-meta'));list.append(card);});updateExportSelection();$('#exportBooksDialog').showModal();}
-    function exportSelectedBooks(){const books=getData().filter(book=>exportSelection.has(book.id));if(!books.length)return;if($('#combineExport').checked){downloadJson(books,'worldkit-v0.1.28-books.json');}else books.forEach((book,index)=>setTimeout(()=>downloadJson([book],`worldkit-${safeExportName(book.title)}.json`),index*140));$('#exportBooksDialog').close();}
+    function exportSelectedBooks(){const books=getData().filter(book=>exportSelection.has(book.id));if(!books.length)return;if($('#combineExport').checked){downloadJson(books,'worldkit-v0.1.29-books.json');}else books.forEach((book,index)=>setTimeout(()=>downloadJson([book],`worldkit-${safeExportName(book.title)}.json`),index*140));$('#exportBooksDialog').close();}
     $('#exportButton').addEventListener('click',openBookExport);$('#cancelBookExport').addEventListener('click',()=>$('#exportBooksDialog').close());$('#confirmBookExport').addEventListener('click',exportSelectedBooks);
     let pendingImportPlan=null,importBusy=false;
     function showImportSummary(plan){const labels=[['Book',plan.counts.books],['Character',plan.counts.characters],['Timeline',plan.counts.timeline],['Story',plan.counts.stories]],list=$('#importSummaryList'),details=$('#importSummaryTargets');$('#importSummaryIntro').textContent=`Periksa isi “${plan.fileName}” sebelum data dimasukkan ke penyimpanan lokal.`;list.replaceChildren();labels.filter(([,count])=>count>0).forEach(([name,count])=>{const row=make('li');row.append(make('span',name),make('strong',String(count)));list.append(row);});details.replaceChildren();plan.steps.forEach(step=>{const separator=step.indexOf(':'),type=separator>-1?step.slice(0,separator):'Data',rest=separator>-1?step.slice(separator+1).trim():step,[name,target]=rest.split(' → '),row=make('div','','import-detail-row'),copy=make('div','','import-detail-copy');copy.append(make('div',name,'import-detail-name'));if(target)copy.append(make('div','Book tujuan: '+target,'import-detail-target'));row.append(make('span',type,'import-detail-type'),copy);details.append(row);});pendingImportPlan=plan;$('#importSummaryDialog').showModal();}
@@ -711,7 +717,8 @@ SOFTWARE.
       ['v0.1.25',['Dibangun ulang langsung dari v0.1.20; tidak membawa pengaturan background Admin dari build selanjutnya.','Drop impor hanya menerima file eksternal dan dinonaktifkan selama modal terbuka.','Penghapusan mendukung Book dan background yang dipertahankan.','Gradient kiri 25% solid + 40% fade; kanan 25% fade + 10% solid.','Relations dibatasi sepuluh kartu sesuai data relasi dan dapat membuka karakter tujuan.','Satu thumbnail video dan lima akses media konseptual.','Carousel lebih rendah dengan latar putih 30% dan blur.','Ikon Display dilengkapi serta alur startup, penyimpanan dan impor diperketat.']],
       ['v0.1.26',['Kolom Display menjadi Info 40%, Display 30%, dan Panel 30%.','Relations kini memakai satu baris hingga sepuluh kartu kecil.','Carousel tanpa border, teks nama lebih besar dan tebal berwarna emas, dengan kaca putih 10% serta blur.','Teks seluruh menu header Display dibuat hitam.']],
       ['v0.1.27',['Kolom Display disesuaikan menjadi Info 45%, Display 30%, dan Panel 25%.']],
-      ['v0.1.28',['Carousel memakai teks putih tebal, border emas, dan kaca putih transparan.','Panah carousel berwarna putih dengan border emas tanpa latar.','Character mendapat input link YouTube dan thumbnail membuka modal pemutar video.','Tombol media Panel disusun berjajar dengan tema emas transparan.','Kartu Relations dipusatkan dan nama panjang ditampilkan utuh di bawah foto.','Gradient Display menjadi 30% solid terang, 30% fade, 10% transparan, 20% fade gelap, dan 10% solid gelap.']]
+      ['v0.1.28',['Carousel memakai teks putih tebal, border emas, dan kaca putih transparan.','Panah carousel berwarna putih dengan border emas tanpa latar.','Character mendapat input link YouTube dan thumbnail membuka modal pemutar video.','Tombol media Panel disusun berjajar dengan tema emas transparan.','Kartu Relations dipusatkan dan nama panjang ditampilkan utuh di bawah foto.','Gradient Display menjadi 30% solid terang, 30% fade, 10% transparan, 20% fade gelap, dan 10% solid gelap.']],
+      ['v0.1.29',['Loading awal tampil selama IndexedDB dan daftar Book sedang dimuat.','Indikator memakai blur, ikon berputar, dan teks tanpa kartu latar tambahan.','Warna loading otomatis mengikuti tema Admin terang atau gelap.','Loading ditutup halus setelah data selesai dirender, termasuk ketika jalur pemulihan dijalankan.']]
     ];
     function renderStorageDashboard(container){
       const card=make('section','','storage-dashboard'),head=make('div','','storage-dashboard-head'),copy=make('div'),bar=make('div','','storage-bar'),fill=make('div','','storage-bar-fill'),values=make('div','','storage-values'),used=make('div','','storage-value'),limit=make('div','','storage-value'),remaining=make('div','','storage-value'),state=make('p','','storage-state');
@@ -769,8 +776,19 @@ SOFTWARE.
     document.querySelectorAll('.version').forEach(el=>el.textContent='v'+APP_VERSION);
     document.querySelectorAll('.app-footer span:last-child').forEach(el=>el.textContent='© 2026 WorldKit · v'+APP_VERSION);
     const releaseLog=document.querySelector('.version-tooltip');
-    if(releaseLog){releaseLog.replaceChildren(make('strong','Pembaruan v'+APP_VERSION),make('p','Video YouTube Character, tema emas, Relations, carousel, dan gradient Display diperbarui.'));}
+    if(releaseLog){releaseLog.replaceChildren(make('strong','Pembaruan v'+APP_VERSION),make('p','Loading awal data dengan blur, indikator berputar, serta warna adaptif light dan dark.'));}
     const previewId=new URLSearchParams(location.search).get('preview');
+    function finishAppLoading(){
+      const loading=$('#appLoading');
+      if(!loading)return;
+      const remove=()=>loading.remove();
+      if(preferences.reduceMotion||matchMedia('(prefers-reduced-motion: reduce)').matches){remove();return;}
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        loading.classList.add('is-leaving');
+        loading.addEventListener('transitionend',remove,{once:true});
+        setTimeout(remove,320);
+      }));
+    }
     async function startApplication(){
       try{
         await initializeStorage();
@@ -781,6 +799,8 @@ SOFTWARE.
         recovery.setAttribute('role','alert');
         recovery.append(make('h2','Halaman belum dapat dimuat'),make('p',error.message||'Terjadi kesalahan saat membaca data.'),button('Muat ulang','',()=>location.reload()));
         document.body.append(recovery);
+      }finally{
+        finishAppLoading();
       }
     }
     startApplication();
